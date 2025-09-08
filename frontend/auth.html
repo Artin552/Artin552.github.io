@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Вход / Регистрация — СтройМаркет</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="container" style="padding-top:40px; max-width:560px;">
+    <h2>Вход</h2>
+    <form id="loginForm" class="form">
+      <input class="input" id="email" placeholder="Email" type="email" required>
+      <input class="input" id="password" placeholder="Пароль" type="password" minlength="6" required>
+      <div style="display:flex; gap:8px; justify-content:flex-end">
+        <button class="btn" type="submit">Войти</button>
+        <a href="index.html" class="btn secondary">Отмена</a>
+      </div>
+    </form>
+
+    <hr style="margin:20px 0">
+
+    <h2>Регистрация</h2>
+    <form id="registerForm" class="form">
+      <input class="input" id="rname" placeholder="Имя и фамилия" required>
+      <input class="input" id="remail" placeholder="Email" type="email" required>
+      <input class="input" id="rpassword" placeholder="Пароль" type="password" minlength="6" required>
+      <div style="display:flex; gap:8px; justify-content:flex-end">
+        <button class="btn" type="submit">Зарегистрироваться</button>
+      </div>
+    </form>
+  </main>
+
+<script>
+  // Примеры отправки на backend (на сервере нужно реализовать эти маршруты)
+  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    try{
+      const res = await fetch('http://localhost:4000/api/auth/login',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email, password})
+      });
+      const data = await res.json();
+      alert('Ответ сервера: ' + JSON.stringify(data));
+      // В реальном приложении: сохранить токен в localStorage, перенаправить
+    }catch(e){ alert('Ошибка входа'); console.error(e) }
+  });
+
+  document.getElementById('registerForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('rname').value;
+    const email = document.getElementById('remail').value;
+    const password = document.getElementById('rpassword').value;
+    try{
+      const res = await fetch('http://localhost:4000/api/auth/register',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name, email, password})
+      });
+      const data = await res.json();
+      alert('Зарегистрированы: ' + JSON.stringify(data));
+    }catch(e){ alert('Ошибка регистрации'); console.error(e) }
+  });
+</script>
+</body>
+</html>

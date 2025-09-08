@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Личный кабинет</title><link rel="stylesheet" href="css/styles.css"></head>
+<body>
+  <main class="container" style="padding-top:40px">
+    <h2>Мои объявления</h2>
+    <div id="myListings" class="grid">
+      <!-- JS загрузит объявления текущего пользователя -->
+    </div>
+    <div style="margin-top:12px">
+      <a href="add.html" class="btn">Добавить объявление</a>
+    </div>
+  </main>
+
+<script>
+  async function loadMy(){
+    // В реальном приложении: отправляйте токен (Authorization) и получайте только свои объявления.
+    try{
+      const res = await fetch('http://localhost:4000/api/listings');
+      const data = await res.json();
+      const root = document.getElementById('myListings');
+      root.innerHTML = '';
+      data.forEach(item=>{
+        // пока просто показываем все объявления (демо)
+        const card = document.createElement('article');
+        card.className = 'card';
+        const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`;
+        card.innerHTML = `
+          <img class="thumb" src="${imgUrl}" alt="${item.title}">
+          <div class="meta">
+            <div class="title">${item.title}</div>
+            <div class="muted">${item.category}</div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn secondary" onclick="alert('Редактировать: ${item.id}')">Редактировать</button>
+              <button class="btn" onclick="deleteItem('${item.id}')">Удалить</button>
+            </div>
+          </div>
+        `;
+        root.appendChild(card);
+      });
+    }catch(e){ console.error(e) }
+  }
+
+  async function deleteItem(id){
+    if(!confirm('Удалить объявление?')) return;
+    try{
+      const res = await fetch('http://localhost:4000/api/listings/' + id, { method:'DELETE' });
+      if(res.ok){ alert('Удалено'); loadMy(); } else alert('Ошибка удаления');
+    }catch(e){ alert('Ошибка'); }
+  }
+
+  loadMy();
+</script>
+</body>
+</html>

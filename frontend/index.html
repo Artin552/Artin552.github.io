@@ -1,0 +1,106 @@
+<!-- index.html
+  Главная страница: поиск, популярные категории, последние объявления.
+  Комментарии внутри объясняют блоки.
+-->
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>СтройМаркет — объявления</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Хедер с логотипом, поиском и кнопкой "Добавить" -->
+  <header class="header">
+    <div class="container inner">
+      <a class="logo" href="index.html">
+        <span class="mark" aria-hidden="true"></span>
+        <span>СтройМаркет</span>
+      </a>
+
+      <div style="flex:1; margin:0 16px;">
+        <!-- Поисковая панель: можно потом подключить JS -->
+        <div class="search-bar">
+          <input id="searchInput" placeholder="Поиск объявлений, напр. 'экскаватор'">
+          <button class="btn" id="searchBtn">Поиск</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; align-items:center">
+        <a href="auth.html" class="btn secondary">Вход / Регистрац.</a>
+        <a href="add.html" class="btn">Добавить</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:18px">
+    <!-- Популярные категории -->
+    <section aria-label="Популярные категории">
+      <h2>Популярные категории</h2>
+      <div class="categories" id="categories">
+        <!-- Примеры категорий -->
+        <div class="category">Техника</div>
+        <div class="category">Цемент, сухие смеси</div>
+        <div class="category">Инструменты</div>
+        <div class="category">Крепеж</div>
+      </div>
+    </section>
+
+    <!-- Последние объявления (грид карточек) -->
+    <section aria-label="Последние объявления">
+      <h2>Последние объявления</h2>
+      <div id="listings" class="grid">
+        <!-- JS подставляет карточки сюда. Пока — шаблоны / заглушки -->
+      </div>
+    </section>
+
+    <footer class="footer">
+      © 2025 СтройМаркет — учебный проект. Все права принадлежат автору проекта.
+    </footer>
+  </main>
+
+  <script>
+    // Пример: получить список объявлений с backend (если запущен)
+    async function loadListings(q=''){
+      const root = document.getElementById('listings');
+      root.innerHTML = 'Загрузка...';
+      try{
+        const res = await fetch('http://localhost:4000/api/listings' + (q?('?q='+encodeURIComponent(q)):''));
+        const data = await res.json();
+        if(!Array.isArray(data)) { root.innerText = 'Ошибка формата ответа'; return; }
+        if(data.length===0){ root.innerHTML = '<div>Объявлений пока нет.</div>'; return;}
+        root.innerHTML = '';
+        data.forEach(item=>{
+          const card = document.createElement('article');
+          card.className = 'card';
+          // thumb: если есть imagePath — использует его, иначе заглушка
+          const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`;
+          card.innerHTML = `
+            <img class="thumb" src="${imgUrl}" alt="${item.title}">
+            <div class="meta">
+              <div>
+                <div class="title">${item.title}</div>
+                <div class="muted small">${item.category} • ${item.location || ''}</div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="price">${item.price ? item.price + ' ₽' : 'Цена по договорённости'}</div>
+                <a class="btn secondary" href="listings.html?id=${item.id}">Открыть</a>
+              </div>
+            </div>
+          `;
+          root.appendChild(card);
+        });
+      }catch(e){
+        root.innerText = 'Не удалось загрузить объявления (нет сервера).';
+        console.error(e);
+      }
+    }
+    document.getElementById('searchBtn').addEventListener('click', ()=>{
+      loadListings(document.getElementById('searchInput').value.trim());
+    });
+    // load on start
+    loadListings();
+  </script>
+</body>
+</html>

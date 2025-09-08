@@ -1,0 +1,72 @@
+<!-- listings.html
+   Показ всех объявлений с возможностью фильтра/категорий.
+-->
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Список объявлений — СтройМаркет</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container inner">
+      <a class="logo" href="index.html"><span class="mark"></span>СтройМаркет</a>
+      <div style="flex:1; margin:0 16px;">
+        <div class="search-bar">
+          <input id="searchInput" placeholder="Поиск по объявлениям">
+          <button class="btn" id="searchBtn">Поиск</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center">
+        <a href="auth.html" class="btn secondary">Вход</a>
+        <a href="add.html" class="btn">Добавить</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:18px">
+    <section>
+      <h2>Все объявления</h2>
+      <div id="listings" class="grid"></div>
+    </section>
+    <footer class="footer">© 2025 СтройМаркет</footer>
+  </main>
+
+<script>
+  async function loadAll(q=''){
+    const root = document.getElementById('listings');
+    root.innerHTML = 'Загрузка...';
+    try{
+      const res = await fetch('http://localhost:4000/api/listings' + (q?('?q='+encodeURIComponent(q)):''));
+      const data = await res.json();
+      root.innerHTML = '';
+      data.forEach(item=>{
+        const card = document.createElement('article');
+        card.className = 'card';
+        const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`;
+        card.innerHTML = `
+          <img class="thumb" src="${imgUrl}" alt="${item.title}">
+          <div class="meta">
+            <div>
+              <div class="title">${item.title}</div>
+              <div class="muted small">${item.category}</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div class="price">${item.price ? item.price + ' ₽' : 'По договоренности'}</div>
+              <a class="btn secondary" href="#">Открыть</a>
+            </div>
+          </div>
+        `;
+        root.appendChild(card);
+      });
+    }catch(e){
+      root.innerText = 'Ошибка загрузки';
+    }
+  }
+  document.getElementById('searchBtn').addEventListener('click', ()=> loadAll(document.getElementById('searchInput').value.trim()));
+  loadAll();
+</script>
+</body>
+</html>

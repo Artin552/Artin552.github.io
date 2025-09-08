@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Добавить объявление — СтройМаркет</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="container" style="padding-top:40px; max-width:760px;">
+    <h2>Добавить объявление</h2>
+    <form id="addForm" class="form">
+      <!-- title -->
+      <input class="input" id="title" placeholder="Заголовок (напр. 'Экскаватор JCB 2012')" required>
+      <!-- category -->
+      <select id="category" class="input">
+        <option>Техника</option>
+        <option>Инструменты</option>
+        <option>Материалы</option>
+        <option>Крепеж</option>
+      </select>
+      <!-- price -->
+      <input class="input" id="price" placeholder="Цена в ₽ (или оставьте пустым)" type="number" min="0">
+      <!-- description -->
+      <textarea id="description" class="input" placeholder="Описание объявления"></textarea>
+
+      <!-- upload image (будем читать в base64 и отправлять в JSON) -->
+      <label>Фото (1):</label>
+      <input id="photo" type="file" accept="image/*">
+
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button class="btn" type="submit">Опубликовать</button>
+        <a href="index.html" class="btn secondary">Отмена</a>
+      </div>
+    </form>
+  </main>
+
+<script>
+  // Для простоты: читаем изображение client-side как base64 и отправляем в JSON.
+  document.getElementById('addForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const title = document.getElementById('title').value;
+    const category = document.getElementById('category').value;
+    const price = document.getElementById('price').value;
+    const description = document.getElementById('description').value;
+    const file = document.getElementById('photo').files[0];
+
+    let imageBase64 = '';
+    if(file){
+      // читаем файл как base64
+      imageBase64 = await new Promise((res,rej)=>{
+        const fr = new FileReader();
+        fr.onload = ()=> res(fr.result);
+        fr.onerror = rej;
+        fr.readAsDataURL(file);
+      });
+    }
+
+    // Пример POST-запроса к backend
+    try{
+      const res = await fetch('http://localhost:4000/api/listings',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          title, category, price, description,
+          imageBase64
+        })
+      });
+      const data = await res.json();
+      if(res.ok) {
+        alert('Объявление добавлено, id=' + data.id);
+        window.location.href = 'dashboard.html';
+      } else {
+        alert('Ошибка: ' + JSON.stringify(data));
+      }
+    }catch(e){
+      alert('Не удалось отправить запрос к серверу');
+      console.error(e);
+    }
+  });
+</script>
+</body>
+</html>
