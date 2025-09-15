@@ -35,49 +35,69 @@ body{
   margin:0 auto;
   padding:0 var(--container-padding);
 }
-
 /* --- Хедер --- */
-.header{
-  background:linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
-  padding:18px 0;
-  box-shadow:var(--shadow);
-  position:sticky;
-  top:0;
-  z-index:20;
+.header {
+  height: 500px; /* задай нужную высоту */
+  background-image: url("./img/header-background-img.jpg"); /* путь к картинке */
+  background-size: cover; /* растянуть на весь header */
+  background-position: center; /* центрирование */
+  position: relative; /* чтобы absolute работал относительно header */
+  overflow: hidden;
 }
-.header .inner{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
+  
+/* --- вверх хедера --- */
+.top_header {
+  background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+  padding: 18px 0;
+  box-shadow: var(--shadow);
+  position: sticky; /* "прилипает" к верху при скролле */
+  top: 0;
+  z-index: 20; /* поверх картинки */
+  display: flex;
+  width: 85%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  border-radius: 12px;
 }
-.logo{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-weight:700;
-  color:var(--accent);
-  text-decoration:none;
+
+.header .inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
-.logo .mark{
-  width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#0ea5a4,#06b6d4);
-  display:inline-block;
+
+/* --- низ хедера --- */
+.under_header {
+  position: absolute;  /* фиксируем внизу header */
+  bottom: 20px;        /* чуть выше низа картинки */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;         /* поверх картинки */
+  width: 85%;
+  max-width: var(--max-width);
 }
 
 /* --- Поисковая панель --- */
-.search-bar{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  background:var(--card);
-  padding:8px;
-  border-radius:10px;
-  box-shadow:var(--shadow);
-  flex:1;
+.search-bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--card);
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  flex: 1;
 }
-.search-bar input{
-  border:0; outline:none; font-size:15px; flex:1; background:transparent;
+
+.search-bar input {
+  border: 0;
+  outline: none;
+  font-size: 14px;
+  flex: 1;
+  background: transparent;
 }
+
 
 /* --- Карточки категорий (гориз.) --- */
 .categories{

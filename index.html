@@ -12,29 +12,36 @@
 </head>
 <body>
   <!-- Хедер с логотипом, поиском и кнопкой "Добавить" -->
+   
   <header class="header">
-    <div class="container inner">
-      <a class="logo" href="index.html">
-        <span class="mark" aria-hidden="true"></span>
-        <span>СтройМаркет</span>
-      </a>
+    <div class = "top_header">
+      <div class="container inner">
+        <a class="logo" href="index.html">
+          <span class="mark" aria-hidden="true"></span>
+          <span>СтройМаркет</span>
+        </a>
 
-      <div style="flex:1; margin:0 16px;">
-        <!-- Поисковая панель: можно потом подключить JS -->
-        <div class="search-bar">
-          <input id="searchInput" placeholder="Поиск объявлений, напр. 'экскаватор'">
-          <button class="btn" id="searchBtn">Поиск</button>
+        <div style="display:flex; gap:8px; align-items:center">
+          <a href="/frontend/auth.html" class="btn secondary">Вход / Регистрац.</a>
+          <a href="/frontend/add.html" class="btn">Добавить</a>
         </div>
       </div>
-
-      <div style="display:flex; gap:8px; align-items:center">
-        <a href="/frontend/auth.html" class="btn secondary">Вход / Регистрац.</a>
-        <a href="/frontend/add.html" class="btn">Добавить</a>
+    </div>
+    <div class = "under_header">
+      <div style="flex:1; margin:0 16px;">
+          <!-- Поисковая панель: можно потом подключить JS -->
+          <div class="search-bar">
+            <input id="searchInput" placeholder="Поиск объявлений, напр. 'экскаватор'">
+            <button class="btn" id="searchBtn">Поиск</button>
+          </div>
       </div>
     </div>
   </header>
 
+  
+
   <main class="container" style="padding-top:18px">
+
     <!-- Популярные категории -->
     <section aria-label="Популярные категории">
       <h2>Популярные категории</h2>
