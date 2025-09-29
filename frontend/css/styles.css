@@ -38,13 +38,13 @@ body{
 /* --- Хедер --- */
 .header {
   height: 500px; /* задай нужную высоту */
-  background-image: url("./img/header-background-img.jpg"); /* путь к картинке */
+  background-image: url("../img/header-background-img.jpg"); /* путь к картинке */
   background-size: cover; /* растянуть на весь header */
   background-position: center; /* центрирование */
   position: relative; /* чтобы absolute работал относительно header */
   overflow: hidden;
 }
-  
+
 /* --- вверх хедера --- */
 .top_header {
   background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
@@ -67,6 +67,19 @@ body{
   gap: 12px;
 }
 
+
+/* --- середина хедера надпись --- */
+.m_header{
+  position:absolute;
+  left:50%; top:65%; transform:translate(-50%,-50%);
+  margin:0;
+  font-size: clamp(80px, 25vw, 320px);
+  font-weight:900;
+  color: rgba(255,255,255,0.95); /* белый */
+  text-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  z-index:2;
+  pointer-events:none;
+}
 /* --- низ хедера --- */
 .under_header {
   position: absolute;  /* фиксируем внизу header */
