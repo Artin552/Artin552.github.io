@@ -18,12 +18,11 @@
       <div class="container inner">
         <a class="logo" href="index.html">
           <span class="mark" aria-hidden="true"></span>
-          <span>СтройМаркет</span>
+          <span class="text-name">BuildStore</span>
         </a>
-
         <div style="display:flex; gap:8px; align-items:center">
-          <a href="/frontend/auth.html" class="btn secondary">Вход / Регистрац.</a>
-          <a href="/frontend/add.html" class="btn">Добавить</a>
+          <a href="/auth.html" class="btn secondary">Вход / Регистрац.</a>
+          <a href="/add.html" class="btn">Добавить</a>
         </div>
       </div>
     </div>
@@ -100,7 +99,7 @@
           root.appendChild(card);
         });
       }catch(e){
-        root.innerText = 'Не удалось загрузить объявления (нет сервера).';
+        root.innerText = 'Не удалось загрузить объявления.';
         console.error(e);
       }
     }

@@ -48,12 +48,11 @@ body{
 /* --- вверх хедера --- */
 .top_header {
   background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
-  padding: 18px 0;
+  padding: 10px 0;
   box-shadow: var(--shadow);
-  position: sticky; /* "прилипает" к верху при скролле */
+  position: sticky;
   top: 0;
-  z-index: 20; /* поверх картинки */
-  display: flex;
+  z-index: 20;
   width: 85%;
   max-width: var(--max-width);
   margin: 0 auto;
@@ -90,7 +89,18 @@ body{
   width: 85%;
   max-width: var(--max-width);
 }
-
+/* --- Лого название --- */
+.text-name{
+  display: flex;
+  position: relative;
+  left: 0%;
+  font-family: 'Rosso One', sans-serif;
+  font-size: 36px;
+  text-transform:  uppercase;
+  background: linear-gradient(90deg, #0ea5a4, #065f5b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+} 
 /* --- Поисковая панель --- */
 .search-bar {
   display: flex;
