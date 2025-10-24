@@ -7,63 +7,58 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <main class="container" style="padding-top:40px; max-width:560px;">
+  <main class="auth-container">
     <h2>Вход</h2>
-    <form id="loginForm" class="form">
+    <form id="loginForm" class="auth-form">
       <input class="input" id="email" placeholder="Email" type="email" required>
       <input class="input" id="password" placeholder="Пароль" type="password" minlength="6" required>
-      <div style="display:flex; gap:8px; justify-content:flex-end">
+
+      <div class="forgot-link">
+        <a href="reg.html">Регистрация</a> |
+        <a href="forgot.html">Забыли пароль?</a>
+      </div>
+
+      <div class="auth-btns">
         <button class="btn" type="submit">Войти</button>
         <a href="index.html" class="btn secondary">Отмена</a>
       </div>
     </form>
 
-    <hr style="margin:20px 0">
-
-    <h2>Регистрация</h2>
-    <form id="registerForm" class="form">
-      <input class="input" id="rname" placeholder="Имя и фамилия" required>
-      <input class="input" id="remail" placeholder="Email" type="email" required>
-      <input class="input" id="rpassword" placeholder="Пароль" type="password" minlength="6" required>
-      <div style="display:flex; gap:8px; justify-content:flex-end">
-        <button class="btn" type="submit">Зарегистрироваться</button>
-      </div>
-    </form>
   </main>
 
 <script>
-  // Примеры отправки на backend (на сервере нужно реализовать эти маршруты)
-  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    try{
-      const res = await fetch('http://localhost:4000/api/auth/login',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email, password})
-      });
-      const data = await res.json();
-      alert('Ответ сервера: ' + JSON.stringify(data));
-      // В реальном приложении: сохранить токен в localStorage, перенаправить
-    }catch(e){ alert('Ошибка входа'); console.error(e) }
-  });
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); // чтобы форма не перезагружала страницу
 
-  document.getElementById('registerForm').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const name = document.getElementById('rname').value;
-    const email = document.getElementById('remail').value;
-    const password = document.getElementById('rpassword').value;
-    try{
-      const res = await fetch('http://localhost:4000/api/auth/register',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name, email, password})
-      });
-      const data = await res.json();
-      alert('Зарегистрированы: ' + JSON.stringify(data));
-    }catch(e){ alert('Ошибка регистрации'); console.error(e) }
-  });
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  if (!email || !password) return alert('Введите email и пароль');
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Сохраняем токен для дальнейших запросов
+      localStorage.setItem('token', data.token);
+      alert('Вход выполнен!');
+      window.location.href = '/'; // редирект на главную
+    } else {
+      alert(data.error || 'Ошибка входа');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Ошибка соединения с сервером');
+  }
+});
 </script>
+
+
 </body>
 </html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Вход / Регистрация — СтройМаркет</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="auth-container">
+    <h2>Регистрация</h2>
+    <form id="registerForm" class="auth-form">
+      <input class="input" id="rname" placeholder="Имя и фамилия" required>
+      <input class="input" id="remail" placeholder="Email" type="email" required>
+      <input class="input" id="rpassword" placeholder="Пароль" type="password" minlength="6" required>
+      <div class="auth-btns">
+        <button class="btn" type="submit">Зарегистрироваться</button>
+      </div>
+    </form>
+  </main>
+
+<script>
+const registerForm = document.getElementById('registerForm');
+
+registerForm.addEventListener('submit', async (e) => {
+  e.preventDefault(); // отключаем стандартное поведение формы
+
+  // Берём значения полей
+  const name = document.getElementById('rname').value.trim();
+  const email = document.getElementById('remail').value.trim();
+  const password = document.getElementById('rpassword').value;
+
+  try {
+    const res = await fetch('http://localhost:5000/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      // ✅ Перенаправляем на страницу авторизации
+      window.location.href = data.redirect || 'auth.html';
+    } else {
+      alert(data.error || 'Ошибка регистрации');
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert('Ошибка соединения с сервером');
+  }
+});
+</script>
+
+  
+  </body>
+</html>
