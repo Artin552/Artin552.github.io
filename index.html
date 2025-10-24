@@ -1,17 +1,12 @@
-<!-- index.html
-  Главная страница: поиск, популярные категории, последние объявления.
--->
 <!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>СтройМаркет — объявления</title>
-  <!-- 💡 Путь к стилям без /frontend/, так как express.static уже раздаёт frontend как корень -->
   <link rel="stylesheet" href="frontend/css/styles.css">
 </head>
 <body>
-  <!-- Хедер с логотипом, поиском и кнопкой "Добавить" -->
   <header class="header">
     <div class="top_header">
       <div class="container inner">
@@ -19,9 +14,8 @@
           <span class="mark" aria-hidden="true"></span>
           <span class="text-name">BuildStore</span>
         </a>
-        <div style="display:flex; gap:8px; align-items:center">
-          <!-- 💡 Ссылки ведут прямо к /auth.html и /add.html -->
-          <a href="frontend/auth.html" class="btn secondary">Вход / Регистрация</a>
+        <div style="display:flex; gap:8px; align-items:center" id="userSection">
+          <a href="frontend/auth.html" class="btn secondary" id="authBtn">Вход / Регистрация</a>
           <a href="frontend/add.html" class="btn">Добавить</a>
         </div>
       </div>
@@ -29,7 +23,6 @@
     <div class="m_header">Market</div>
     <div class="under_header">
       <div style="flex:1; margin:0 16px;">
-        <!-- Поисковая панель -->
         <div class="search-bar">
           <input id="searchInput" placeholder="Поиск объявлений, напр. 'экскаватор'">
           <button class="btn" id="searchBtn">Поиск</button>
@@ -39,7 +32,6 @@
   </header>
 
   <main class="container" style="padding-top:18px">
-    <!-- Популярные категории -->
     <section aria-label="Популярные категории">
       <h2>Популярные категории</h2>
       <div class="categories" id="categories">
@@ -50,7 +42,6 @@
       </div>
     </section>
 
-    <!-- Последние объявления -->
     <section aria-label="Последние объявления">
       <h2>Последние объявления</h2>
       <div id="listings" class="grid">
@@ -64,12 +55,26 @@
   </main>
 
   <script>
-    // Загрузка списка объявлений
+    // 🔹 Показываем email пользователя вместо кнопки входа
+    document.addEventListener('DOMContentLoaded', () => {
+      const authBtn = document.getElementById('authBtn');
+      const userEmail = sessionStorage.getItem('userEmail');
+      if (userEmail) {
+        authBtn.textContent = userEmail;
+        authBtn.href = '#';
+        authBtn.addEventListener('click', () => {
+          sessionStorage.removeItem('userEmail');
+          window.location.reload();
+        });
+      }
+    });
+
+    // 🔹 Загрузка списка объявлений
     async function loadListings(q = '') {
       const root = document.getElementById('listings');
       root.innerHTML = 'Загрузка...';
       try {
-        const res = await fetch('http://localhost:4000/api/listings' + (q ? ('?q=' + encodeURIComponent(q)) : ''));
+        const res = await fetch('http://localhost:5000/api/listings' + (q ? ('?q=' + encodeURIComponent(q)) : ''));
         const data = await res.json();
         if (!Array.isArray(data)) {
           root.innerText = 'Ошибка формата ответа';
@@ -109,7 +114,7 @@
       loadListings(document.getElementById('searchInput').value.trim());
     });
 
-    // Загрузка при старте
+    // 🔹 Загрузка при старте
     loadListings();
   </script>
 </body>

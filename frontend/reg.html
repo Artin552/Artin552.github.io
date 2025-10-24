@@ -23,9 +23,8 @@
 const registerForm = document.getElementById('registerForm');
 
 registerForm.addEventListener('submit', async (e) => {
-  e.preventDefault(); // отключаем стандартное поведение формы
+  e.preventDefault();
 
-  // Берём значения полей
   const name = document.getElementById('rname').value.trim();
   const email = document.getElementById('remail').value.trim();
   const password = document.getElementById('rpassword').value;
@@ -38,10 +37,8 @@ registerForm.addEventListener('submit', async (e) => {
     });
 
     const data = await res.json();
-
     if (data.success) {
-      // ✅ Перенаправляем на страницу авторизации
-      window.location.href = data.redirect || 'auth.html';
+      window.location.href = data.redirect;
     } else {
       alert(data.error || 'Ошибка регистрации');
     }
@@ -52,7 +49,5 @@ registerForm.addEventListener('submit', async (e) => {
   }
 });
 </script>
-
-  
-  </body>
+</body>
 </html>

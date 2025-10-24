@@ -27,30 +27,27 @@
   </main>
 
 <script>
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault(); // чтобы форма не перезагружала страницу
+const loginForm = document.getElementById('loginForm');
 
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  if (!email || !password) return alert('Введите email и пароль');
+  const email = document.getElementById('lemail').value.trim();
+  const password = document.getElementById('lpassword').value;
 
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
 
     const data = await res.json();
-
-    if (res.ok) {
-      // Сохраняем токен для дальнейших запросов
-      localStorage.setItem('token', data.token);
-      alert('Вход выполнен!');
-      window.location.href = '/'; // редирект на главную
+    if (data.success) {
+      sessionStorage.setItem('userEmail', data.email);
+      window.location.href = data.redirect;
     } else {
-      alert(data.error || 'Ошибка входа');
+      alert(data.error || 'Ошибка авторизации');
     }
   } catch (err) {
     console.error(err);
