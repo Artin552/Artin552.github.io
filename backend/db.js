@@ -12,9 +12,15 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
       email TEXT UNIQUE,
-      password TEXT
+      password TEXT,
+      reset_token TEXT,
+      reset_requested_at INTEGER
     )
   `);
+
+  
+  db.run("ALTER TABLE users ADD COLUMN reset_token TEXT", [], (err) => { /* ignore errors if column exists */ });
+  db.run("ALTER TABLE users ADD COLUMN reset_requested_at INTEGER", [], (err) => { /* ignore errors if column exists */ });
 });
 
 module.exports = db;

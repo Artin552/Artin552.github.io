@@ -11,8 +11,8 @@
     <h2>Регистрация</h2>
     <form id="registerForm" class="auth-form">
       <input class="input" id="rname" placeholder="Имя и фамилия" required>
-      <input class="input" id="remail" placeholder="Email" type="email" required>
-      <input class="input" id="rpassword" placeholder="Пароль" type="password" minlength="6" required>
+  <input class="input" id="remail" placeholder="Email" type="email" required>
+  <input class="input" id="rpassword" placeholder="Пароль" type="password" minlength="6" required>
       <div class="auth-btns">
         <button class="btn" type="submit">Зарегистрироваться</button>
       </div>
@@ -30,7 +30,7 @@ registerForm.addEventListener('submit', async (e) => {
   const password = document.getElementById('rpassword').value;
 
   try {
-    const res = await fetch('http://localhost:5000/api/auth/register', {
+    const res = await fetch('http://localhost:4000/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password })

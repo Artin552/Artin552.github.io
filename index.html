@@ -55,17 +55,36 @@
   </main>
 
   <script>
-    // 🔹 Показываем email пользователя вместо кнопки входа
+    // 🔹 Показываем email пользователя вместо кнопки входа и добавляем выход
     document.addEventListener('DOMContentLoaded', () => {
+      const userSection = document.getElementById('userSection');
       const authBtn = document.getElementById('authBtn');
       const userEmail = sessionStorage.getItem('userEmail');
+
       if (userEmail) {
-        authBtn.textContent = userEmail;
-        authBtn.href = '#';
-        authBtn.addEventListener('click', () => {
+        // Скрываем старую кнопку
+        authBtn.style.display = 'none';
+
+        // Создаём ссылку на личный кабинет
+        const profileLink = document.createElement('a');
+        profileLink.className = 'btn secondary';
+        profileLink.href = 'frontend/dashboard.html';
+        profileLink.textContent = userEmail;
+
+        // Кнопка выхода
+        const logoutBtn = document.createElement('button');
+        logoutBtn.className = 'btn';
+        logoutBtn.textContent = 'Выйти';
+        logoutBtn.addEventListener('click', () => {
           sessionStorage.removeItem('userEmail');
+          sessionStorage.removeItem('token');
+          // Опционально: очистить localStorage если там есть токен
+          localStorage.removeItem('token');
           window.location.reload();
         });
+
+        userSection.insertBefore(profileLink, userSection.firstChild);
+        userSection.insertBefore(logoutBtn, userSection.firstChild.nextSibling);
       }
     });
 
