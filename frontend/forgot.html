@@ -10,9 +10,12 @@
   <main class="auth-container">
     <h2>Восстановление пароля</h2>
     <form id="forgotForm" class="auth-form">
-      <input class="input" id="femail" placeholder="Email" type="email" required>
+      <div class="form__group">
+        <input class="form__field" id="femail" name="email" placeholder="Email" type="email" required />
+        <label class="form__label" for="femail">Email</label>
+      </div>
       <div class="auth-btns">
-        <button class="btn" type="submit">Отправить ссылку в Telegram</button>
+        <button class="btn" type="submit">Отправить код на email</button>
       </div>
     </form>
   </main>
@@ -22,7 +25,7 @@ document.getElementById('forgotForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = document.getElementById('femail').value.trim();
   try {
-    const res = await fetch('http://localhost:4000/api/auth/forgot', {
+  const res = await fetch('/api/auth/forgot', {
       method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email })
     });
     const data = await res.json();
@@ -33,5 +36,6 @@ document.getElementById('forgotForm').addEventListener('submit', async (e) => {
   }
 });
 </script>
+ 
 </body>
 </html>

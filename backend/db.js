@@ -12,15 +12,35 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
       email TEXT UNIQUE,
-      password TEXT,
-      reset_token TEXT,
-      reset_requested_at INTEGER
+      password TEXT
     )
   `);
 
-  
-  db.run("ALTER TABLE users ADD COLUMN reset_token TEXT", [], (err) => { /* ignore errors if column exists */ });
-  db.run("ALTER TABLE users ADD COLUMN reset_requested_at INTEGER", [], (err) => { /* ignore errors if column exists */ });
+  // Таблица объявлений
+  db.run(`
+    CREATE TABLE IF NOT EXISTS listings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      category TEXT,
+      price TEXT,
+      description TEXT,
+      imagePath TEXT,
+      imageBase64 TEXT,
+      created_at INTEGER
+    )
+  `);
+
+  // Безопасная миграция: добавим owner_id, если его нет
+  db.all("PRAGMA table_info('listings')", (err, cols) => {
+    if (err) return console.error('DB pragma error', err);
+    const hasOwner = cols && cols.some(c => c.name === 'owner_id');
+    if (!hasOwner) {
+      db.run('ALTER TABLE listings ADD COLUMN owner_id INTEGER', (err2) => {
+        if (err2) console.error('Не удалось добавить owner_id:', err2);
+        else console.log('Добавлен столбец owner_id в listings');
+      });
+    }
+  });
 });
 
 module.exports = db;

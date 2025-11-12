@@ -18,6 +18,7 @@
           <a href="frontend/auth.html" class="btn secondary" id="authBtn">Вход / Регистрация</a>
           <a href="frontend/add.html" class="btn">Добавить</a>
         </div>
+        
       </div>
     </div>
     <div class="m_header">Market</div>
@@ -91,9 +92,19 @@
     // 🔹 Загрузка списка объявлений
     async function loadListings(q = '') {
       const root = document.getElementById('listings');
-      root.innerHTML = 'Загрузка...';
+      // показываем мини-анимацию загрузки
+      root.innerHTML = `
+        <div style="display:flex;justify-content:center;padding:24px;">
+          <div class="boxes" aria-hidden="true">
+            <div class="box"><div></div><div></div><div></div><div></div></div>
+            <div class="box"><div></div><div></div><div></div><div></div></div>
+            <div class="box"><div></div><div></div><div></div><div></div></div>
+            <div class="box"><div></div><div></div><div></div><div></div></div>
+          </div>
+        </div>
+      `;
       try {
-        const res = await fetch('http://localhost:5000/api/listings' + (q ? ('?q=' + encodeURIComponent(q)) : ''));
+  const res = await fetch('/api/listings' + (q ? ('?q=' + encodeURIComponent(q)) : ''));
         const data = await res.json();
         if (!Array.isArray(data)) {
           root.innerText = 'Ошибка формата ответа';
@@ -117,7 +128,7 @@
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div class="price">${item.price ? item.price + ' ₽' : 'Цена по договорённости'}</div>
-                <a class="btn secondary" href="listings.html?id=${item.id}">Открыть</a>
+                <a class="btn secondary" href="frontend/listings.html?id=${item.id}">Открыть</a>
               </div>
             </div>
           `;
@@ -129,12 +140,44 @@
       }
     }
 
-    document.getElementById('searchBtn').addEventListener('click', () => {
-      loadListings(document.getElementById('searchInput').value.trim());
+    // Поддержка Enter в поле поиска
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const q = searchInput.value.trim();
+        // обновляем url без перезагрузки
+        history.replaceState(null, '', q ? ('?q=' + encodeURIComponent(q)) : window.location.pathname);
+        loadListings(q);
+      }
     });
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const q = document.getElementById('searchInput').value.trim();
+      history.replaceState(null, '', q ? ('?q=' + encodeURIComponent(q)) : window.location.pathname);
+      loadListings(q);
+    });
+
+    // По клику по категории — делаем поиск по ней
+    document.querySelectorAll('.category').forEach(el => {
+      el.addEventListener('click', () => {
+        const q = el.textContent.trim();
+        searchInput.value = q;
+        history.replaceState(null, '', '?q=' + encodeURIComponent(q));
+        loadListings(q);
+      });
+    });
+
+    // Если в URL есть q при загрузке — заполним поле и выполним поиск
+    const initParams = new URLSearchParams(window.location.search);
+    const initQ = initParams.get('q');
+    if (initQ) {
+      searchInput.value = initQ;
+      loadListings(initQ);
+    }
 
     // 🔹 Загрузка при старте
     loadListings();
   </script>
+  
 </body>
 </html>

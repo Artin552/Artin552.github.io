@@ -35,13 +35,59 @@
   </main>
 
 <script>
+  // Если в URL есть id — показываем одну карточку, иначе список
   async function loadAll(q=''){
     const root = document.getElementById('listings');
-    root.innerHTML = 'Загрузка...';
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if(id){
+      root.innerHTML = 'Загрузка объявления...';
+      try{
+        const res = await fetch('/api/listings/' + encodeURIComponent(id));
+        if(!res.ok){ root.innerText = 'Объявление не найдено'; return; }
+        const item = await res.json();
+        const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/1200/700`;
+        const created = item.created_at ? new Date(Number(item.created_at)) : null;
+        const dateStr = created ? created.toLocaleDateString('ru-RU', { year:'numeric', month:'long', day:'numeric' }) : '';
+        root.innerHTML = `
+          <div class="listing-detail">
+            <div class="listing-header">
+              <div class="listing-title">${item.title}</div>
+              <div class="listing-date muted small">${dateStr}</div>
+            </div>
+
+            <div class="listing-image-wrapper">
+              <img class="listing-image" src="${imgUrl}" alt="${item.title}">
+            </div>
+
+            <div class="listing-body">
+              <div class="listing-desc">${item.description || ''}</div>
+              <div class="listing-meta muted small">${item.category || ''}</div>
+            </div>
+
+            <div class="listing-cta">
+              <h3>Готовы купить?</h3>
+              <p class="muted">Свяжитесь с нами или оформите заказ онлайн.</p>
+              <div style="margin-top:12px;"><a class="btn" href="#">Оформить</a></div>
+            </div>
+
+            <div style="text-align:center; margin:28px 0 48px;"><a href="../index.html" class="btn secondary">← Назад</a></div>
+          </div>
+        `;
+        // скрыть глобальный header для детального вида
+        const pageHeader = document.querySelector('header.header');
+        if(pageHeader) pageHeader.style.display = 'none';
+      }catch(e){ root.innerText = 'Ошибка загрузки объявления'; }
+      return;
+    }
+
+    // обычный список
+    const root2 = document.getElementById('listings');
+    root2.innerHTML = 'Загрузка...';
     try{
-      const res = await fetch('http://localhost:4000/api/listings' + (q?('?q='+encodeURIComponent(q)):''));
+      const res = await fetch('/api/listings' + (q?('?q='+encodeURIComponent(q)):''));
       const data = await res.json();
-      root.innerHTML = '';
+      root2.innerHTML = '';
       data.forEach(item=>{
         const card = document.createElement('article');
         card.className = 'card';
@@ -55,18 +101,28 @@
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div class="price">${item.price ? item.price + ' ₽' : 'По договоренности'}</div>
-              <a class="btn secondary" href="#">Открыть</a>
+              <a class="btn secondary" href="listings.html?id=${item.id}">Открыть</a>
             </div>
           </div>
         `;
-        root.appendChild(card);
+        root2.appendChild(card);
       });
     }catch(e){
-      root.innerText = 'Ошибка загрузки';
+      root2.innerText = 'Ошибка загрузки';
     }
   }
   document.getElementById('searchBtn').addEventListener('click', ()=> loadAll(document.getElementById('searchInput').value.trim()));
-  loadAll();
+  // если в URL есть q — выполнить поиск
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q') || '';
+  if (q) document.getElementById('searchInput').value = q;
+  document.getElementById('searchBtn').addEventListener('click', ()=>{
+    const qv = document.getElementById('searchInput').value.trim();
+    history.replaceState(null,'', qv?('?q='+encodeURIComponent(qv)) : '');
+    loadAll(qv);
+  });
+  document.getElementById('searchInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ const qv=document.getElementById('searchInput').value.trim(); history.replaceState(null,'', qv?('?q='+encodeURIComponent(qv)): ''); loadAll(qv); } });
+  loadAll(q);
 </script>
 </body>
 </html>

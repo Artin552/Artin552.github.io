@@ -3,7 +3,9 @@
    Используется mobile-first подход: сначала мобильные стили, затем медиа-запросы.
 */
 
-/* --- Базовые переменные --- */
+/* -------------------------------------------------------------------------- */
+/* ------------------------ 1) Базовые переменные / тема ---------------------- */
+/* -------------------------------------------------------------------------- */
 :root{
   --bg: #f6f7fb;
   --card: #ffffff;
@@ -16,7 +18,9 @@
   --gap: 12px;
 }
 
-/* --- Ресет и базовая типографика --- */
+/* -------------------------------------------------------------------------- */
+/* ------------------------ 2) Ресет и типографика --------------------------- */
+/* -------------------------------------------------------------------------- */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -29,13 +33,17 @@ body{
   line-height:1.45;
 }
 
-/* --- Контейнер центровки --- */
+/* -------------------------------------------------------------------------- */
+/* ------------------------ 3) Сеточная обёртка / контейнер ------------------- */
+/* -------------------------------------------------------------------------- */
 .container{
   max-width:var(--max-width);
   margin:0 auto;
   padding:0 var(--container-padding);
 }
-/* --- Хедер --- */
+/* -------------------------------------------------------------------------- */
+/* ------------------------ 4) Хедер / обложка сайта ------------------------ */
+/* -------------------------------------------------------------------------- */
 .header {
   height: 500px; /* задай нужную высоту */
   background-image: url("../img/header-background-img.jpg"); /* путь к кафртинке */
@@ -45,7 +53,9 @@ body{
   overflow: hidden;
 }
 
-/* --- вверх хедера --- */
+/* -------------------------------------------------------------------------- */
+/* 4.1) Хедер: верхняя панель (логотип, ссылки) ---------------------------- */
+/* -------------------------------------------------------------------------- */
 .top_header {
   background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
   padding: 10px 0;
@@ -59,6 +69,9 @@ body{
   border-radius: 12px;
 }
 
+/* -------------------------------------------------------------------------- */
+/* 4.2) Хедер: внутренняя сетка (выравнивание контента) --------------------- */
+/* -------------------------------------------------------------------------- */
 .header .inner {
   display: flex;
   align-items: center;
@@ -67,7 +80,9 @@ body{
 }
 
 
-/* --- середина хедера надпись --- */
+/* -------------------------------------------------------------------------- */
+/* 4.3) Хедер: большая декоративная надпись (фон) -------------------------- */
+/* -------------------------------------------------------------------------- */
 .m_header{
   position:absolute;
   left:50%; top:65%; transform:translate(-50%,-50%);
@@ -79,7 +94,9 @@ body{
   z-index:2;
   pointer-events:none;
 }
-/* --- низ хедера --- */
+/* -------------------------------------------------------------------------- */
+/* 4.4) Хедер: нижняя часть (поиск и т.п.) --------------------------------- */
+/* -------------------------------------------------------------------------- */
 .under_header {
   position: absolute;  /* фиксируем внизу header */
   bottom: 20px;        /* чуть выше низа картинки */
@@ -89,7 +106,9 @@ body{
   width: 85%;
   max-width: var(--max-width);
 }
-/* --- Лого название --- */
+/* -------------------------------------------------------------------------- */
+/* 4.5) Логотип / название сайта ------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 .text-name{
   display: flex;
   position: relative;
@@ -101,7 +120,9 @@ body{
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 } 
-/* --- Поисковая панель --- */
+/* -------------------------------------------------------------------------- */
+/* 5) Поисковая панель ----------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 .search-bar {
   display: flex;
   gap: 8px;
@@ -122,7 +143,9 @@ body{
 }
 
 
-/* --- Карточки категорий (гориз.) --- */
+/* -------------------------------------------------------------------------- */
+/* 6) Категории (горизонтальный список) ----------------------------------- */
+/* -------------------------------------------------------------------------- */
 .categories{
   display:flex;
   gap:10px;
@@ -139,7 +162,9 @@ body{
 }
 .category:hover{ transform:translateY(-4px); transition:all .18s }
 
-/* --- Секция последних объявлений (грид) --- */
+/* -------------------------------------------------------------------------- */
+/* 7) Секция: последние объявления (карточки, грид) ------------------------- */
+/* -------------------------------------------------------------------------- */
 .grid{
   display:grid;
   grid-template-columns:1fr;
@@ -172,7 +197,9 @@ body{
 .card .title{ font-weight:600 }
 .card .price{ color:var(--accent); font-weight:700 }
 
-/* --- Кнопки --- */
+/* -------------------------------------------------------------------------- */
+/* 8) Кнопки (основные стили) ---------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 .btn{
   display:inline-flex;
   align-items:center;
@@ -189,7 +216,9 @@ body{
   background:transparent; color:var(--accent); border:1px solid rgba(14,165,164,0.12);
 }
 
-/* --- Форма добавления --- */
+/* -------------------------------------------------------------------------- */
+/* 9) Форма добавления / общие формы -------------------------------------- */
+/* -------------------------------------------------------------------------- */
 .form{
   display:flex;
   flex-direction:column;
@@ -208,7 +237,9 @@ body{
 }
 textarea{ min-height:120px; resize:vertical }
 
-/* --- Простейший футер --- */
+/* -------------------------------------------------------------------------- */
+/* 10) Футер --------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
 .footer{
   margin-top:28px;
   padding:20px 0;
@@ -217,7 +248,9 @@ textarea{ min-height:120px; resize:vertical }
   text-align:center;
 }
 
-/* --- Адаптив: для планшета/десктопа --- */
+/* -------------------------------------------------------------------------- */
+/* 11) Адаптивность / медиазапросы ----------------------------------------- */
+/* -------------------------------------------------------------------------- */
 @media(min-width:768px){
   .grid{ grid-template-columns: repeat(2, 1fr); }
 }
@@ -227,7 +260,9 @@ textarea{ min-height:120px; resize:vertical }
 }
 
 
-/* --- Страница авторизации (auth.html) --- */
+/* -------------------------------------------------------------------------- */
+/* 12) Страницы авторизации / регистрация (стили форм) ---------------------- */
+/* -------------------------------------------------------------------------- */
 .auth-container {
   max-width: 560px;
   margin: 50px auto;
@@ -287,3 +322,217 @@ textarea{ min-height:120px; resize:vertical }
   border: none;
   border-top: 1px solid #e6e9ee;
 }
+
+/* --- Плавающие метки (from mrhyddenn) ---------------------------------- */
+/* Ниже — стили для .form__group, .form__field, .form__label (плавающие метки) */
+.form__group {
+  position: relative;
+  padding: 20px 0 0;
+  width: 100%;
+  max-width: 100%; /* allow full width within container */
+}
+/* .form__field — само поле ввода */
+.form__field {
+  font-family: inherit;
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #9b9b9b;
+  outline: 0;
+  font-size: 17px;
+  color: inherit; /* используем текущий цвет текста, чтобы не ломать тему */
+  padding: 7px 0;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+
+.form__field::placeholder {
+  color: transparent;
+}
+
+.form__field:placeholder-shown ~ .form__label {
+  font-size: 17px;
+  cursor: text;
+  top: 20px;
+}
+
+.form__label {
+  position: absolute;
+  top: 0;
+  display: block;
+  transition: 0.2s;
+  font-size: 17px;
+  color: #9b9b9b;
+  pointer-events: none;
+}
+
+.form__field:focus {
+  padding-bottom: 6px;
+  font-weight: 700;
+  border-width: 3px;
+  border-image: linear-gradient(to right, #116399, #38caef);
+  border-image-slice: 1;
+}
+
+.form__field:focus ~ .form__label {
+  position: absolute;
+  top: 0;
+  display: block;
+  transition: 0.2s;
+  font-size: 17px;
+  color: #38caef;
+  font-weight: 700;
+}
+
+/* reset input */
+.form__field:required, .form__field:invalid {
+  box-shadow: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* ---------------- START: Loader animation (From Nawsome, adapted) ---------- */
+/* Маленькая 3D-анимация кубиков для показа загрузки на главной странице */
+.boxes {
+  --size: 28px; /* базовый размер кубика (подстроен под сайт) */
+  --duration: 900ms; /* скорость анимации */
+  height: calc(var(--size) * 2);
+  width: calc(var(--size) * 3);
+  position: relative;
+  transform-style: preserve-3d;
+
+/* -------------------------------------------------------------------------- */
+/* ---------------- Single listing detail styles --------------------------- */
+/* -------------------------------------------------------------------------- */
+.card.full {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  padding: 0;
+}
+
+.card.full .thumb{
+  width:100%;
+  height: auto;
+  max-height: 520px;
+  object-fit:cover;
+}
+
+.card.full .meta{
+  padding:24px;
+}
+
+.card.full .title{
+  font-size:28px;
+  margin:0 0 8px 0;
+}
+
+.card.full .muted.small{ color:var(--muted); font-size:14px }
+
+.card.full p{ margin:12px 0; color:#333; line-height:1.6 }
+
+.card.full .price{
+  font-size:22px;
+  color:var(--accent);
+  background: rgba(14,165,164,0.06);
+  padding:8px 12px;
+  border-radius:8px;
+  display:inline-block;
+}
+
+.card.full .meta .btn.secondary{ margin-top:10px }
+
+@media(min-width:900px){
+  .card.full{ display:flex; flex-direction:row; }
+  .card.full .thumb{ width:50%; max-height:640px }
+  .card.full .meta{ width:50%; }
+}
+
+/* Детальная страница объявления */
+.listing-detail{ max-width:900px; margin:40px auto; padding:0 16px; }
+.listing-header{ text-align:center; margin-bottom:18px }
+.listing-title{ font-size:20px; font-weight:700; color:#0f1724; }
+.listing-date{ margin-top:6px; color:var(--muted); font-size:13px }
+
+.listing-image-wrapper{ display:flex; justify-content:center; margin:18px 0; }
+.listing-image{ width:100%; max-width:860px; height:420px; object-fit:cover; border-radius:12px; box-shadow:var(--shadow); background:#f3f6f8 }
+
+.listing-body{ max-width:760px; margin:28px auto; color:#374151; line-height:1.7 }
+.listing-desc{ font-size:15px; margin-bottom:10px }
+.listing-meta{ font-size:13px; color:var(--muted) }
+
+.listing-cta{ text-align:center; margin-top:44px; padding:40px 20px; background:linear-gradient(180deg, rgba(14,165,164,0.04), rgba(14,165,164,0.02)); border-radius:12px }
+.listing-cta h3{ margin:0 0 8px 0; font-size:18px }
+.listing-cta p{ margin:0; color:var(--muted) }
+
+@media(min-width:900px){
+  .listing-image{ height:520px }
+  .listing-title{ font-size:24px }
+}
+  transform-origin: 50% 50%;
+  margin: 0 auto; /* центрируем внутри контейнера */
+  transform: rotateX(60deg) rotateZ(45deg) translateZ(0px);
+}
+
+.boxes .box {
+  width: var(--size);
+  height: var(--size);
+  top: 0;
+  left: 0;
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.boxes .box:nth-child(1) {
+  transform: translate(100%, 0);
+  animation: box1 var(--duration) linear infinite;
+}
+.boxes .box:nth-child(2) {
+  transform: translate(0, 100%);
+  animation: box2 var(--duration) linear infinite;
+}
+.boxes .box:nth-child(3) {
+  transform: translate(100%, 100%);
+  animation: box3 var(--duration) linear infinite;
+}
+.boxes .box:nth-child(4) {
+  transform: translate(200%, 0);
+  animation: box4 var(--duration) linear infinite;
+}
+
+.boxes .box > div {
+  --background: var(--accent, #0ea5a4); /* используем акцент сайта */
+  --translateZ: calc(var(--size) / 2);
+  --rotateY: 0deg;
+  --rotateX: 0deg;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--background);
+  transform: rotateY(var(--rotateY)) rotateX(var(--rotateX)) translateZ(var(--translateZ));
+}
+
+.boxes .box > div:nth-child(1) { --top: 0; --left: 0; }
+.boxes .box > div:nth-child(2) { --background: #0a6fbf; --right: 0; --rotateY: 90deg; }
+.boxes .box > div:nth-child(3) { --background: #2d88f4; --rotateX: -90deg; }
+.boxes .box > div:nth-child(4) { --background: #e6f0ff; --top: 0; --left: 0; --translateZ: calc(var(--size) * 3 * -1); }
+
+@keyframes box1 {
+  0%,50% { transform: translate(100%, 0); }
+  100%  { transform: translate(200%, 0); }
+}
+@keyframes box2 {
+  0% { transform: translate(0, 100%); }
+  50% { transform: translate(0, 0); }
+ 100% { transform: translate(100%, 0); }
+}
+@keyframes box3 {
+  0%,50% { transform: translate(100%, 100%); }
+ 100% { transform: translate(0, 100%); }
+}
+@keyframes box4 {
+  0% { transform: translate(200%, 0); }
+ 50% { transform: translate(200%, 100%); }
+ 100% { transform: translate(100%, 100%); }
+}
+/* ---------------- END: Loader animation ---------------------------------- */
+/* -------------------------------------------------------------------------- */
+

@@ -58,9 +58,13 @@
 
     // Пример POST-запроса к backend
     try{
-      const res = await fetch('http://localhost:4000/api/listings',{
+      const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+      const res = await fetch('/api/listings',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:{
+          'Content-Type':'application/json',
+          ...(token?{ Authorization: 'Bearer ' + token }: {})
+        },
         body: JSON.stringify({
           title, category, price, description,
           imageBase64

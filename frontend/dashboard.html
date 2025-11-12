@@ -16,7 +16,8 @@
   async function loadMy(){
     // В реальном приложении: отправляйте токен (Authorization) и получайте только свои объявления.
     try{
-      const res = await fetch('http://localhost:4000/api/listings');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+  const res = await fetch('/api/listings?mine=true', { headers: token?{ Authorization: 'Bearer ' + token } : {} });
       const data = await res.json();
       const root = document.getElementById('myListings');
       root.innerHTML = '';
@@ -31,7 +32,7 @@
             <div class="title">${item.title}</div>
             <div class="muted">${item.category}</div>
             <div style="display:flex;gap:8px;margin-top:8px;">
-              <button class="btn secondary" onclick="alert('Редактировать: ${item.id}')">Редактировать</button>
+              <button class="btn secondary" onclick="editItem('${item.id}', '${escape(item.title)}', '${item.price || ''}')">Редактировать</button>
               <button class="btn" onclick="deleteItem('${item.id}')">Удалить</button>
             </div>
           </div>
@@ -44,8 +45,19 @@
   async function deleteItem(id){
     if(!confirm('Удалить объявление?')) return;
     try{
-      const res = await fetch('http://localhost:4000/api/listings/' + id, { method:'DELETE' });
+  const res = await fetch('/api/listings/' + id, { method:'DELETE' });
       if(res.ok){ alert('Удалено'); loadMy(); } else alert('Ошибка удаления');
+    }catch(e){ alert('Ошибка'); }
+  }
+
+  async function editItem(id, currentTitle, currentPrice){
+    const newTitle = prompt('Новый заголовок', currentTitle) || currentTitle;
+    const newPrice = prompt('Новая цена', currentPrice) || currentPrice;
+    if(newTitle === currentTitle && newPrice === currentPrice) return;
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    try{
+      const res = await fetch('/api/listings/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...(token?{ Authorization: 'Bearer ' + token }: {}) }, body: JSON.stringify({ title: newTitle, price: newPrice }) });
+      if(res.ok){ alert('Сохранено'); loadMy(); } else { const err = await res.json(); alert('Ошибка: ' + (err.error || JSON.stringify(err))); }
     }catch(e){ alert('Ошибка'); }
   }
 

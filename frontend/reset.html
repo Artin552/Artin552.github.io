@@ -10,8 +10,14 @@
   <main class="auth-container">
     <h2>Сброс пароля</h2>
     <form id="resetForm" class="auth-form">
-      <input class="input" id="token" placeholder="Код из Telegram" required>
-      <input class="input" id="newpass" placeholder="Новый пароль" type="password" minlength="6" required>
+      <div class="form__group">
+        <input class="form__field" id="token" name="token" placeholder="Код" required />
+        <label class="form__label" for="token">Код</label>
+      </div>
+      <div class="form__group">
+        <input class="form__field" id="newpass" name="password" placeholder="Новый пароль" type="password" minlength="6" required />
+        <label class="form__label" for="newpass">Новый пароль</label>
+      </div>
       <div class="auth-btns">
         <button class="btn" type="submit">Сменить пароль</button>
       </div>
@@ -24,7 +30,7 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
   const token = document.getElementById('token').value.trim();
   const password = document.getElementById('newpass').value;
   try {
-    const res = await fetch('http://localhost:4000/api/auth/reset', {
+  const res = await fetch('/api/auth/reset', {
       method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ token, password })
     });
     const data = await res.json();
