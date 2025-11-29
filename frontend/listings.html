@@ -8,6 +8,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Список объявлений — СтройМаркет</title>
   <link rel="stylesheet" href="css/styles.css">
+    <script>
+      // include shared auth helper
+    </script>
+    <script src="js/auth.js"></script>
 </head>
 <body>
   <header class="header">
@@ -27,15 +31,37 @@
   </header>
 
   <main class="container" style="padding-top:18px">
-    <section>
-      <h2>Все объявления</h2>
-      <div id="listings" class="grid"></div>
+    <!-- Categories tiles (moved from index) -->
+    <section aria-label="Категории" class="categories-section" id="categoriesSection">
+      <h2>Категории</h2>
+      <div id="categoryTiles" class="category-tiles">
+        <!-- fallback tiles -->
+        <button class="category-tile" data-cat="">Все</button>
+      </div>
+    </section>
+
+    <section aria-label="Результаты и фильтры">
+      <div class="results-grid" id="resultsGrid" hidden>
+        <aside class="filters-panel" id="filtersPanel" aria-label="Фильтры">
+          <h3>Фильтры</h3>
+          <div class="filter-group"><label><input type="checkbox" id="fInStock"> В наличии</label></div>
+          <div class="filter-group"><label><input type="checkbox" id="fDiscount"> Только со скидкой</label></div>
+          <div class="filter-group"><label>Минимальный рейтинг</label><select id="fRating"><option value="0">Любой</option><option value="3">≥ 3</option><option value="4">≥ 4</option></select></div>
+          <div class="filter-group"><label>Цена (макс)</label><input type="number" id="fMaxPrice" placeholder="Максимум"></div>
+          <div style="margin-top:12px; display:flex; gap:8px"><button class="btn" id="clearFilters">Сбросить</button><button class="btn primary" id="applyFilters">Применить</button></div>
+        </aside>
+        <main class="results-main">
+          <h2 class="sr">Объявления</h2>
+          <div id="listings" class="grid"></div>
+        </main>
+      </div>
     </section>
     <footer class="footer">© 2025 СтройМаркет</footer>
   </main>
 
 <script>
   // Если в URL есть id — показываем одну карточку, иначе список
+  let __page = 1; const __limit = 12;
   async function loadAll(q=''){
     const root = document.getElementById('listings');
     const params = new URLSearchParams(window.location.search);
@@ -85,7 +111,9 @@
     const root2 = document.getElementById('listings');
     root2.innerHTML = 'Загрузка...';
     try{
-      const res = await fetch('/api/listings' + (q?('?q='+encodeURIComponent(q)):''));
+      const query = q ? (q.indexOf('?')===0? q + `&page=${__page}&limit=${__limit}` : ('?q='+encodeURIComponent(q) + `&page=${__page}&limit=${__limit}`)) : (`?page=${__page}&limit=${__limit}`);
+      const res = await fetch('/api/listings' + query);
+      const total = Number(res.headers.get('x-total-count') || 0);
       const data = await res.json();
       root2.innerHTML = '';
       data.forEach(item=>{
@@ -107,22 +135,148 @@
         `;
         root2.appendChild(card);
       });
+      // pagination controls
+      const pager = document.getElementById('pager');
+      if(pager) pager.remove();
+      const p = document.createElement('div'); p.id='pager'; p.style.textAlign='center'; p.style.marginTop='12px';
+      const totalPages = Math.max(1, Math.ceil(total / __limit));
+      p.innerHTML = `<button class="btn" id="prevPage" ${__page<=1?'disabled':''}>← Назад</button> <span style="margin:0 8px">Страница ${__page} из ${totalPages}</span> <button class="btn" id="nextPage" ${__page>=totalPages?'disabled':''}>Далее →</button>`;
+      root2.parentNode.appendChild(p);
+      document.getElementById('prevPage').addEventListener('click', ()=>{ if(__page>1){ __page--; loadAll(q); } });
+      document.getElementById('nextPage').addEventListener('click', ()=>{ if(__page<totalPages){ __page++; loadAll(q); } });
     }catch(e){
       root2.innerText = 'Ошибка загрузки';
     }
   }
   document.getElementById('searchBtn').addEventListener('click', ()=> loadAll(document.getElementById('searchInput').value.trim()));
-  // если в URL есть q — выполнить поиск
+  // если в URL есть q — выполнить поиск или если есть cat — показать категорию
   const params = new URLSearchParams(window.location.search);
   const q = params.get('q') || '';
+  const catParam = params.get('cat') || '';
   if (q) document.getElementById('searchInput').value = q;
   document.getElementById('searchBtn').addEventListener('click', ()=>{
     const qv = document.getElementById('searchInput').value.trim();
     history.replaceState(null,'', qv?('?q='+encodeURIComponent(qv)) : '');
+    // show results view
+    document.getElementById('resultsGrid').hidden = false;
+    document.getElementById('categoriesSection').hidden = true;
     loadAll(qv);
   });
-  document.getElementById('searchInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ const qv=document.getElementById('searchInput').value.trim(); history.replaceState(null,'', qv?('?q='+encodeURIComponent(qv)): ''); loadAll(qv); } });
-  loadAll(q);
+  document.getElementById('searchInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ const qv=document.getElementById('searchInput').value.trim(); history.replaceState(null,'', qv?('?q='+encodeURIComponent(qv)): ''); document.getElementById('resultsGrid').hidden=false; document.getElementById('categoriesSection').hidden=true; loadAll(qv); } });
+
+  // initial view: if cat param provided, show results for that category with filters on left
+  if(catParam){
+    document.getElementById('resultsGrid').hidden = false;
+    document.getElementById('categoriesSection').hidden = true;
+    // ensure filters panel visible
+    document.getElementById('filtersPanel').hidden = false;
+    // load listings where q=catParam
+    loadAll('?q=' + encodeURIComponent(catParam));
+  } else {
+    // default: show only categories
+    document.getElementById('resultsGrid').hidden = true;
+    document.getElementById('categoriesSection').hidden = false;
+    // Populate categories without rendering all listings
+    (async ()=>{
+      try{
+        const res = await fetch('/api/listings');
+        const data = await res.json();
+        window.__latestListings = data || [];
+        populateCategoryTiles(window.__latestListings);
+      }catch(e){ console.warn('failed to load categories', e); }
+    })();
+  }
+
+  // --- Category + Filters helpers ---
+  function populateCategoryTiles(listings){
+    const container = document.getElementById('categoryTiles');
+    if(!container) return;
+    const cats = Array.from(new Set((listings||[]).map(it=>it.category).filter(Boolean)));
+    container.innerHTML = '';
+    const currentCat = new URLSearchParams(window.location.search).get('cat') || '';
+  // compute counts per category
+  const counts = (listings || []).reduce((acc, it) => { if(!it.category) return acc; acc[it.category] = (acc[it.category] || 0) + 1; return acc; }, {});
+  const allBtn = document.createElement('button'); allBtn.className='category-tile' + (currentCat === '' ? ' active' : ''); allBtn.dataset.cat=''; allBtn.setAttribute('aria-pressed', currentCat === ''); allBtn.innerHTML = 'Все <span class="cat-count">' + (listings ? listings.length : 0) + '</span>'; container.appendChild(allBtn);
+  cats.forEach(c=>{ const b=document.createElement('button'); b.className='category-tile' + (currentCat === c ? ' active' : ''); b.dataset.cat=c; b.setAttribute('aria-pressed', currentCat === c); b.innerHTML = `${c} <span class="cat-count">${counts[c] || 0}</span>`; container.appendChild(b); });
+    // tile click navigates to listings?cat=... (full page navigation)
+    container.querySelectorAll('.category-tile').forEach(btn=>btn.addEventListener('click', ()=>{
+      const cat = btn.dataset.cat || '';
+      const href = window.location.pathname + (cat ? ('?cat=' + encodeURIComponent(cat)) : '');
+      window.location.href = href;
+    }));
+  }
+
+  function applyFilters(extra = {}){
+    const list = (window.__latestListings || []).slice();
+    const inStock = document.getElementById('fInStock')?.checked;
+    const onlyDiscount = document.getElementById('fDiscount')?.checked;
+    const minRating = Number(document.getElementById('fRating')?.value || 0);
+    const maxPrice = Number(document.getElementById('fMaxPrice')?.value || 0) || 0;
+    const category = (extra.category !== undefined) ? extra.category : (document.querySelector('.category-tile.active')?.dataset.cat || '');
+    let filtered = list;
+    if(category) filtered = filtered.filter(i=> (i.category||'') === category);
+    if(inStock) filtered = filtered.filter(i=> (i.in_stock===undefined) ? Boolean(i.stock) : Boolean(i.in_stock));
+    if(onlyDiscount) filtered = filtered.filter(i=> Number(i.discount) > 0);
+    if(minRating) filtered = filtered.filter(i=> Number(i.rating||0) >= minRating);
+    if(maxPrice) filtered = filtered.filter(i=> Number(i.price||0) <= maxPrice);
+    // render
+    const root = document.getElementById('listings'); root.innerHTML='';
+    if(filtered.length===0){ root.innerHTML = '<div>Подходящих объявлений не найдено.</div>'; return; }
+    filtered.forEach(item=>{
+      const card=document.createElement('article'); card.className='card';
+      const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`;
+      card.innerHTML = `<img class="thumb" src="${imgUrl}" alt="${item.title}"><div class="meta"><div><div class="title">${item.title}</div><div class="muted small">${item.category||''}</div></div><div style="display:flex;justify-content:space-between;align-items:center;"><div class="price">${item.price?item.price+' ₽':'По договоренности'}</div><a class="btn secondary" href="listings.html?id=${item.id}">Открыть</a></div></div>`;
+      root.appendChild(card);
+    });
+  }
+
+  // Hook into loadAll to cache results and populate categories
+  (function hookLoadAll(){
+    const original = loadAll;
+    window.loadAll = async function(q=''){
+      // call original
+      await original(q);
+      // after load, cache results from DOM fetch - we fetch them again here to populate categories
+      try{
+        const res = await fetch('/api/listings' + (q?('?q='+encodeURIComponent(q)):'') );
+        const data = await res.json();
+        window.__latestListings = data || [];
+        populateCategoryTiles(window.__latestListings);
+      }catch(e){ console.warn('populate categories failed', e); }
+    }
+  })();
+
+  // filter buttons
+  document.getElementById('applyFilters')?.addEventListener('click', ()=> applyFilters({}));
+  document.getElementById('clearFilters')?.addEventListener('click', ()=>{
+    document.getElementById('fInStock').checked = false; document.getElementById('fDiscount').checked = false; document.getElementById('fRating').value='0'; document.getElementById('fMaxPrice').value='';
+    document.querySelectorAll('.category-tile').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.category-tile[data-cat=""]')?.classList.add('active');
+    document.getElementById('filtersPanel').hidden = true;
+    applyFilters({ category: '' });
+  });
+
+  // handle browser back/forward so view updates when user navigates history
+  window.addEventListener('popstate', (ev)=>{
+    const paramsNow = new URLSearchParams(window.location.search);
+    const catNow = paramsNow.get('cat') || '';
+    const qNow = paramsNow.get('q') || '';
+    if(!catNow && !qNow){
+      // show categories
+      document.getElementById('categoriesSection').hidden = false;
+      document.getElementById('resultsGrid').hidden = true;
+      // repopulate tiles from cached listings
+      populateCategoryTiles(window.__latestListings || []);
+    } else {
+      // show results
+      document.getElementById('categoriesSection').hidden = true;
+      document.getElementById('resultsGrid').hidden = false;
+      document.getElementById('filtersPanel').hidden = false;
+      // if category specified, trigger load for that category
+      if(catNow) loadAll('?q=' + encodeURIComponent(catNow));
+      else loadAll(qNow);
+    }
+  });
 </script>
 </body>
 </html>

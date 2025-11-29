@@ -34,9 +34,9 @@ router.post('/register', (req, res) => {
       function (err) {
         if (err) return res.status(500).json({ error: 'Ошибка при регистрации' });
         const user = { id: this.lastID, name, email };
-        const token = jwt.sign(user, JWT_SECRET, { expiresIn: '7d' });
-
-        res.json({ success: true, user, token, redirect: '/frontend/auth.html' });
+        const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+        // Return token so client can stay logged in; redirect to root
+        res.json({ success: true, user, token, email: user.email, redirect: '/' });
       }
     );
   });

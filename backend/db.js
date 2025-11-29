@@ -30,15 +30,36 @@ db.serialize(() => {
     )
   `);
 
-  // Безопасная миграция: добавим owner_id, если его нет
+  // Добавим дополнительные столбцы, которые используются в приложении (безопасно через PRAGMA)
   db.all("PRAGMA table_info('listings')", (err, cols) => {
     if (err) return console.error('DB pragma error', err);
-    const hasOwner = cols && cols.some(c => c.name === 'owner_id');
-    if (!hasOwner) {
-      db.run('ALTER TABLE listings ADD COLUMN owner_id INTEGER', (err2) => {
-        if (err2) console.error('Не удалось добавить owner_id:', err2);
-        else console.log('Добавлен столбец owner_id в listings');
-      });
+    const names = (cols || []).map(c => c.name);
+    const adds = [];
+    if (!names.includes('owner_id')) adds.push("ALTER TABLE listings ADD COLUMN owner_id INTEGER");
+    if (!names.includes('discount')) adds.push("ALTER TABLE listings ADD COLUMN discount INTEGER DEFAULT 0");
+    if (!names.includes('rating')) adds.push("ALTER TABLE listings ADD COLUMN rating REAL DEFAULT 0");
+    if (!names.includes('reviewsCount')) adds.push("ALTER TABLE listings ADD COLUMN reviewsCount INTEGER DEFAULT 0");
+    if (!names.includes('in_stock')) adds.push("ALTER TABLE listings ADD COLUMN in_stock INTEGER DEFAULT 0");
+    if (!names.includes('is_hot')) adds.push("ALTER TABLE listings ADD COLUMN is_hot INTEGER DEFAULT 0");
+    if (!names.includes('tags')) adds.push("ALTER TABLE listings ADD COLUMN tags TEXT");
+    adds.forEach(a => {
+      db.run(a, (e) => { if (e) console.error('Error migrating listings:', e); else console.log('Migrated listings:', a); });
+    });
+
+    // create index on category for faster filtering (no-op if exists)
+    db.run("CREATE INDEX IF NOT EXISTS idx_listings_category ON listings(category)", (e) => { if (e) console.error('Index create error', e); });
+  });
+
+  // Безопасная миграция: добавим owner_id, если его нет
+  // Ensure users table has reset_token/reset_requested_at for password reset flow
+  db.all("PRAGMA table_info('users')", (err2, ucols) => {
+    if (err2) return console.error('DB pragma error (users)', err2);
+    const unames = (ucols || []).map(c => c.name);
+    if (!unames.includes('reset_token')) {
+      db.run("ALTER TABLE users ADD COLUMN reset_token TEXT", (e) => { if (e) console.error('Could not add reset_token', e); else console.log('Added reset_token to users'); });
+    }
+    if (!unames.includes('reset_requested_at')) {
+      db.run("ALTER TABLE users ADD COLUMN reset_requested_at INTEGER", (e) => { if (e) console.error('Could not add reset_requested_at', e); else console.log('Added reset_requested_at to users'); });
     }
   });
 });
