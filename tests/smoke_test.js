@@ -1,4 +1,8 @@
+// Smoke test - basic flow test (register, login, create listing)
+// Run from project root: node tests/smoke_test.js
+
 const http = require('http');
+
 function req(path, method = 'GET', data = null, token = null) {
   return new Promise((resolve, reject) => {
     const opts = {

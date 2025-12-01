@@ -1,39 +1,80 @@
 // backend/server.js
-  const express = require('express');
-  const cors = require('cors');
-  const path = require('path');
-  const helmet = require('helmet');
-  const rateLimit = require('express-rate-limit');
-  require('dotenv').config();
-  const authRoutes = require('./routes/auth');
-  const listingsRoutes = require('./routes/listings');
+// ============================================================
+// ГЛАВНЫЙ ФАЙЛ СЕРВЕРА (Express приложение)
+// ============================================================
+// Этот файл:
+// 1. Инициализирует Express приложение
+// 2. Подключает middleware (CORS, Helmet, Rate Limiting и т.д.)
+// 3. Подключает маршруты API (/api/auth, /api/listings)
+// 4. Раздаёт статические файлы фронтенда (HTML, CSS, JS, изображения)
+// 5. Запускает сервер на порту 4000
 
-// Global handlers to surface uncaught errors during development
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config(); // Загружаем переменные окружения из .env файла
+const authRoutes = require('./routes/auth'); // Маршруты аутентификации
+const listingsRoutes = require('./routes/listings'); // Маршруты объявлений
+
+// ============================================================
+// ОБРАБОТЧИКИ ОШИБОК
+// ============================================================
+// Ловим необработанные исключения и выводим их в консоль
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err && err.stack ? err.stack : err);
 });
+
+// Ловим необработанные отклонённые Promise'ы
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
 });
 
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ EXPRESS
+// ============================================================
 const app = express();
-const PORT = process.env.PORT || 4000;
-  
+const PORT = process.env.PORT || 4000; // Портт по умолчанию 4000
+
+// ============================================================
+// MIDDLEWARE (промежуточные обработчики запросов)
+// ============================================================
+// Включаем CORS (Cross-Origin Resource Sharing) для доступа с разных доменов
 app.use(cors());
+
+// Включаем Helmet для защиты от уязвимостей в HTTP заголовках
 app.use(helmet());
-// limit JSON size to prevent huge payloads
+
+// Ограничиваем размер JSON тела запроса до 2MB (защита от DoS атак)
 app.use(express.json({ limit: process.env.JSON_LIMIT || '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || '2mb' }));
 
-// basic rate limiter for auth routes
-const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, message: { error: 'Too many requests, slow down' } });
+// ============================================================
+// RATE LIMITERS (ограничение частоты запросов)
+// ============================================================
+// Общий rate limiter для всех /api/auth запросов
+// Лимит: максимум 20 запросов в минуту
+const authLimiter = rateLimit({
+  windowMs: 60 * 1000, // окно временм 1 минута
+  max: 20, // максимум 20 запросов
+  message: { error: 'Too many requests, slow down' }
+});
 app.use('/api/auth', authLimiter);
 
-// Stricter limiter for password reset (forgot) endpoint to prevent abuse
-const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many password reset attempts, please try later' } });
+// Специальный более строгий rate limiter для /forgot эндпоинта
+// Лимит: максимум 3 запроса каждые 15 минут (защита от перебора email'ов)
+const forgotLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 3, // максимум 3 запроса
+  message: { error: 'Too many password reset attempts, please try later' }
+});
 app.use('/api/auth/forgot', forgotLimiter);
 
-// Логирование для /api/*
+// ============================================================
+// ЛОГИРОВАНИЕ ЗАПРОСОВ
+// ============================================================
+// Логируем все запросы к API (полезно для отладки)
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api/')) {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
@@ -41,23 +82,39 @@ app.use((req, res, next) => {
   next();
 });
 
-// centralized error handler
+// ============================================================
+// ОБЩИЙ ОБРАБОТЧИК ОШИБОК
+// ============================================================
+// Ловит необработанные ошибки в маршрутах
 app.use((err, req, res, next) => {
   console.error('Unhandled route error:', err && err.stack ? err.stack : err);
-  if (res.headersSent) return next(err);
+  if (res.headersSent) return next(err); // Если уже был отправлен ответ, пропускаем
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Подключаем маршруты
+// ============================================================
+// ПОДКЛЮЧЕНИЕ API МАРШРУТОВ
+// ============================================================
+// Все маршруты аутентификации начинаются с /api/auth
 app.use('/api/auth', authRoutes);
+
+// Все маршруты объявлений начинаются с /api/listings
 app.use('/api/listings', listingsRoutes);
 
-// Раздаём HTML и CSS (frontend)
-// Serve frontend asset folders at root-relative paths so links like /css/styles.css work
+// ============================================================
+// РАЗДАЧА СТАТИЧЕСКИХ ФАЙЛОВ (фронтенд)
+// ============================================================
+// Раздаём CSS файлы при запросе http://localhost:4000/css/...
 app.use('/css', express.static(path.join(__dirname, '..', 'frontend', 'css')));
+
+// Раздаём JavaScript файлы при запросе http://localhost:4000/js/...
 app.use('/js', express.static(path.join(__dirname, '..', 'frontend', 'js')));
+
+// Раздаём изображения при запросе http://localhost:4000/img/...
 app.use('/img', express.static(path.join(__dirname, '..', 'frontend', 'img')));
-// Serve uploaded images from a dedicated uploads folder (outside frontend) with safe headers
+
+// Раздаём загруженные изображения объявлений при запросе http://localhost:4000/uploads/...
+// С автоматической установкой правильного Content-Type
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
   setHeaders: (res, filepath) => {
     const ext = path.extname(filepath).toLowerCase();
@@ -66,19 +123,56 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
     }
   }
 }));
-// Serve only the frontend folder to avoid exposing repository root (hide .env, server.js, *.db)
+
+// Раздаём все остальные файлы из папки frontend (HTML файлы и т.д.)
+// ВАЖНО: это НЕ раздаёт репозиторий корень (.env, server.js, *.db)
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-const HOST = process.env.HOST || '127.0.0.1';
+// ============================================================
+// СПЕЦИАЛЬНЫЕ МАРШРУТЫ ДЛЯ HTML СТРАНИЦ
+// ============================================================
+// Генерируем маршруты для всех HTML файлов в папке frontend
+// Это позволяет открывать их по двум адресам:
+// /listings.html и /frontend/listings.html
+const frontendHtmlFiles = ['listings.html', 'add.html', 'auth.html', 'dashboard.html', 'reg.html', 'reset.html', 'forgot.html'];
+frontendHtmlFiles.forEach(file => {
+  // Первый маршрут: /frontend/filename.html
+  app.get(`/frontend/${file}`, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', file));
+  });
+  // Второй маршрут: /filename.html (для удобства)
+  app.get(`/${file}`, (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', file));
+  });
+});
+
+// ============================================================
+// ГЛАВНАЯ СТРАНИЦА
+// ============================================================
+// Все остальные GET запросы идут на главную страницу (index.html в корне)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
+// ============================================================
+// ЗАПУСК СЕРВЕРА
+// ============================================================
+const HOST = process.env.HOST || '127.0.0.1'; // По умолчанию локальный хост
 const server = app.listen(PORT, HOST, () => {
   console.log(`✅ Сервер запущен: http://${HOST}:${PORT}`);
 });
 
-process.on('SIGINT', ()=>{
+// ============================================================
+// ОБРАБОТКА ЗАВЕРШЕНИЯ СЕРВЕРА
+// ============================================================
+// При получении сигнала SIGINT (Ctrl+C) корректно завершаем сервер
+process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down');
-  server.close(()=> process.exit(0));
+  server.close(() => process.exit(0));
 });
-process.on('SIGTERM', ()=>{
+
+// При получении сигнала SIGTERM корректно завершаем сервер
+process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down');
-  server.close(()=> process.exit(0));
+  server.close(() => process.exit(0));
 });

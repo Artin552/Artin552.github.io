@@ -8,10 +8,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Список объявлений — СтройМаркет</title>
   <link rel="stylesheet" href="/css/styles.css">
-    <script>
-      // include shared auth helper
-    </script>
   <script src="/js/auth.js"></script>
+  <script src="/js/search.js"></script>
 </head>
 <body>
   <header class="header">
@@ -113,6 +111,11 @@
         // скрыть глобальный header для детального вида
         const pageHeader = document.querySelector('header.header');
         if(pageHeader) pageHeader.style.display = 'none';
+        // скрыть категории и фильтры для детального вида
+        const categoriesSection = document.getElementById('categoriesSection');
+        if(categoriesSection) categoriesSection.style.display = 'none';
+        const resultsGrid = document.querySelector('.results-grid');
+        if(resultsGrid) resultsGrid.style.display = 'none';
       }catch(e){ root.innerText = 'Ошибка загрузки объявления'; }
       return;
     }
@@ -120,6 +123,15 @@
     // обычный список
     const root2 = document.getElementById('listings');
     root2.innerHTML = 'Загрузка...';
+    
+    // Показываем все элементы для обычного списка
+    const pageHeader = document.querySelector('header.header');
+    if(pageHeader) pageHeader.style.display = 'block';
+    const categoriesSection = document.getElementById('categoriesSection');
+    if(categoriesSection) categoriesSection.style.display = 'block';
+    const resultsGrid = document.querySelector('.results-grid');
+    if(resultsGrid) resultsGrid.style.display = 'block';
+    
     try{
       const query = q ? (q.indexOf('?')===0? q + `&page=${__page}&limit=${__limit}` : ('?q='+encodeURIComponent(q) + `&page=${__page}&limit=${__limit}`)) : (`?page=${__page}&limit=${__limit}`);
       const res = await fetch('/api/listings' + query);
@@ -140,7 +152,7 @@
 
         const right = document.createElement('div'); right.style.display = 'flex'; right.style.justifyContent = 'space-between'; right.style.alignItems = 'center';
         const price = document.createElement('div'); price.className = 'price'; price.textContent = item.price ? (item.price + ' ₽') : 'По договоренности';
-        const openA = document.createElement('a'); openA.className = 'btn secondary'; openA.href = 'listings.html?id=' + encodeURIComponent(item.id); openA.textContent = 'Открыть';
+        const openA = document.createElement('a'); openA.className = 'btn secondary'; openA.href = '/frontend/listings.html?view=detail&id=' + encodeURIComponent(item.id); openA.textContent = 'Открыть';
         right.appendChild(price); right.appendChild(openA);
 
         meta.appendChild(left); meta.appendChild(right);
