@@ -74,12 +74,16 @@ router.get('/', (req, res) => {
     const total = cRow ? cRow.cnt : 0;
 
     const offset = (page - 1) * limit;
-  const sql = `SELECT id, title, category, price, description, imagePath, created_at, owner_id ${baseSql} ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    const sql = `SELECT id, title, category, price, description, imagePath, created_at, owner_id ${baseSql} ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
     const finalParams = params.concat([limit, offset]);
     db.all(sql, finalParams, (err, rows) => {
       if (err) return res.status(500).json({ error: 'DB error' });
+      // map rows so imagePath becomes a safe public URL when present
+      const mapped = (rows || []).map(r => {
+        return Object.assign({}, r, { imagePath: r.imagePath ? ('/uploads/' + r.imagePath) : '' });
+      });
       res.set('X-Total-Count', total);
-      res.json(rows || []);
+      res.json(mapped);
     });
   });
 });
@@ -90,12 +94,13 @@ router.get('/:id', (req, res) => {
   db.get('SELECT id, title, category, price, description, imagePath, created_at, owner_id FROM listings WHERE id = ?', [id], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     if (!row) return res.status(404).json({ error: 'Not found' });
-    res.json(row);
+    const mapped = Object.assign({}, row, { imagePath: row.imagePath ? ('/uploads/' + row.imagePath) : '' });
+    res.json(mapped);
   });
 });
 
 // Create new listing
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const user = getUserFromAuthHeader(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
@@ -108,15 +113,28 @@ router.post('/', (req, res) => {
     try{
       const parts = imageBase64.split(',');
       const meta = parts[0];
-      const ext = meta.indexOf('image/') !== -1 ? meta.split('image/')[1].split(';')[0] : 'png';
+      const extCandidate = meta.indexOf('image/') !== -1 ? meta.split('image/')[1].split(';')[0] : 'png';
       const buffer = Buffer.from(parts[1], 'base64');
-      const fname = `uploads/listing_${Date.now()}_${Math.floor(Math.random()*1000)}.${ext}`;
-      const savePath = require('path').join(__dirname, '..', 'frontend', 'img', fname);
+      // validation: size limit 5MB
+      const MAX_BYTES = 5 * 1024 * 1024;
+      if (buffer.length > MAX_BYTES) throw new Error('File too large');
+      const fileType = require('file-type');
+      const ft = await fileType.fromBuffer(buffer);
+      if (!ft || !ft.mime.startsWith('image/')) throw new Error('Not an image');
+      // whitelist extensions
+      const allowed = ['jpg', 'jpeg', 'png', 'webp'];
+      const ext = ft.ext && allowed.includes(ft.ext) ? ft.ext : (allowed.includes(extCandidate) ? extCandidate : null);
+      if (!ext) throw new Error('Disallowed image type');
       const fs = require('fs');
-      fs.mkdirSync(require('path').join(__dirname, '..', 'frontend', 'img', 'uploads'), { recursive: true });
-      fs.writeFileSync(savePath, buffer);
-      finalImagePath = 'frontend/img/' + fname;
-    }catch(err){ console.error('Failed to save image', err); }
+      const path = require('path');
+      const uploadDir = path.join(__dirname, '..', 'uploads');
+      fs.mkdirSync(uploadDir, { recursive: true });
+      const filename = `listing_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const savePath = path.join(uploadDir, filename);
+      fs.writeFileSync(savePath, buffer, { flag: 'w' });
+      // Store only filename in DB; map to /uploads/ on read
+      finalImagePath = filename;
+    }catch(err){ console.error('Failed to save image', err); return res.status(400).json({ error: 'Invalid image upload' }); }
   }
   db.run(
   `INSERT INTO listings (title, category, price, description, imagePath, created_at, owner_id) VALUES (?,?,?,?,?,?,?)`,
@@ -126,7 +144,9 @@ router.post('/', (req, res) => {
       const id = this.lastID;
   db.get('SELECT id, title, category, price, description, imagePath, created_at, owner_id FROM listings WHERE id = ?', [id], (err2, row) => {
         if (err2) return res.status(500).json({ error: 'DB error' });
-        res.status(201).json(row);
+        // expose imagePath as /uploads/<filename>
+        const mapped = Object.assign({}, row, { imagePath: row.imagePath ? ('/uploads/' + row.imagePath) : '' });
+        res.status(201).json(mapped);
       });
     }
   );
@@ -168,7 +188,24 @@ router.put('/:id', (req, res) => {
     if (price !== undefined) { updates.push('price = ?'); params.push(price); }
     if (description !== undefined) { updates.push('description = ?'); params.push(description); }
     if (imagePath !== undefined) { updates.push('imagePath = ?'); params.push(imagePath); }
-    if (imageBase64 !== undefined) { updates.push('imageBase64 = ?'); params.push(imageBase64); }
+    // If client sends imageBase64 to update image, save it to uploads and store filename only
+    if (imageBase64 !== undefined) {
+      try{
+        if (imageBase64 && imageBase64.startsWith('data:')){
+          const parts = imageBase64.split(',');
+          const meta = parts[0];
+          const ext = meta.indexOf('image/') !== -1 ? meta.split('image/')[1].split(';')[0] : 'png';
+          const buffer = Buffer.from(parts[1], 'base64');
+          const fs = require('fs'); const path = require('path');
+          const uploadDir = path.join(__dirname, '..', 'uploads');
+          fs.mkdirSync(uploadDir, { recursive: true });
+          const filename = `listing_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+          const savePath = path.join(uploadDir, filename);
+          fs.writeFileSync(savePath, buffer, { flag: 'w' });
+          updates.push('imagePath = ?'); params.push(filename);
+        }
+      }catch(e){ console.error('failed to save updated image', e); }
+    }
 
     if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 

@@ -29,6 +29,10 @@ app.use(express.urlencoded({ extended: true, limit: process.env.JSON_LIMIT || '2
 const authLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, message: { error: 'Too many requests, slow down' } });
 app.use('/api/auth', authLimiter);
 
+// Stricter limiter for password reset (forgot) endpoint to prevent abuse
+const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 3, message: { error: 'Too many password reset attempts, please try later' } });
+app.use('/api/auth/forgot', forgotLimiter);
+
 // Логирование для /api/*
 app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api/')) {
@@ -49,7 +53,21 @@ app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingsRoutes);
 
 // Раздаём HTML и CSS (frontend)
-app.use('/', express.static(path.join(__dirname, '..')));
+// Serve frontend asset folders at root-relative paths so links like /css/styles.css work
+app.use('/css', express.static(path.join(__dirname, '..', 'frontend', 'css')));
+app.use('/js', express.static(path.join(__dirname, '..', 'frontend', 'js')));
+app.use('/img', express.static(path.join(__dirname, '..', 'frontend', 'img')));
+// Serve uploaded images from a dedicated uploads folder (outside frontend) with safe headers
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
+  setHeaders: (res, filepath) => {
+    const ext = path.extname(filepath).toLowerCase();
+    if (['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)) {
+      res.setHeader('Content-Type', `image/${ext.slice(1)}`);
+    }
+  }
+}));
+// Serve only the frontend folder to avoid exposing repository root (hide .env, server.js, *.db)
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 const HOST = process.env.HOST || '127.0.0.1';
 const server = app.listen(PORT, HOST, () => {

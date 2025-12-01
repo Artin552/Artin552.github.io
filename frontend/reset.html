@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Сброс пароля — СтройМаркет</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
   <main class="auth-container">
@@ -17,6 +17,12 @@
       <div class="form__group">
         <input class="form__field" id="newpass" name="password" placeholder="Новый пароль" type="password" minlength="6" required />
         <label class="form__label" for="newpass">Новый пароль</label>
+        <button type="button" class="icon-btn" id="toggleNewPassword" aria-label="Показать пароль" style="position:absolute; right:14px; top:28px; background:transparent; border:none; font-size:14px">👁️</button>
+      </div>
+      <div class="form__group">
+        <input class="form__field" id="confirmPassword" name="confirmPassword" placeholder="Повторите пароль" type="password" minlength="6" required />
+        <label class="form__label" for="confirmPassword">Повторите пароль</label>
+        <button type="button" class="icon-btn" id="toggleConfirmPassword" aria-label="Показать пароль" style="position:absolute; right:14px; top:28px; background:transparent; border:none; font-size:14px">👁️</button>
       </div>
       <div class="auth-btns">
         <button class="btn" type="submit">Сменить пароль</button>
@@ -30,14 +36,34 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
   const token = document.getElementById('token').value.trim();
   const password = document.getElementById('newpass').value;
   try {
-  const res = await fetch('/api/auth/reset', {
+    // validate password match on client
+    const confirm = document.getElementById('confirmPassword')?.value || '';
+    if(password !== confirm){ alert('Пароли не совпадают'); return; }
+    const res = await fetch('/api/auth/reset', {
       method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ token, password })
     });
     const data = await res.json();
-    if (res.ok) { alert(data.message || 'Пароль изменён'); window.location.href = 'auth.html'; }
+    if (res.ok) { alert(data.message || 'Пароль изменён'); window.location.href = '/frontend/auth.html'; }
     else alert(data.error || 'Ошибка');
   } catch (err) { console.error(err); alert('Ошибка соединения'); }
 });
+// toggles for reset password fields
+const toggleNewPassword = document.getElementById('toggleNewPassword');
+if(toggleNewPassword){
+  toggleNewPassword.addEventListener('click', ()=>{
+    const p = document.getElementById('newpass'); if(!p) return;
+    if(p.type === 'password'){ p.type = 'text'; toggleNewPassword.textContent = '🙈'; toggleNewPassword.setAttribute('aria-label','Скрыть пароль'); }
+    else { p.type = 'password'; toggleNewPassword.textContent = '👁️'; toggleNewPassword.setAttribute('aria-label','Показать пароль'); }
+  });
+}
+const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+if(toggleConfirmPassword){
+  toggleConfirmPassword.addEventListener('click', ()=>{
+    const p = document.getElementById('confirmPassword'); if(!p) return;
+    if(p.type === 'password'){ p.type = 'text'; toggleConfirmPassword.textContent = '🙈'; toggleConfirmPassword.setAttribute('aria-label','Скрыть пароль'); }
+    else { p.type = 'password'; toggleConfirmPassword.textContent = '👁️'; toggleConfirmPassword.setAttribute('aria-label','Показать пароль'); }
+  });
+}
 </script>
 </body>
 </html>

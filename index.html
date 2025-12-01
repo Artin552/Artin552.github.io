@@ -4,17 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>СтройМаркет — объявления</title>
-  <link rel="stylesheet" href="frontend/css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css">
     <script>
       // shared auth helper
     </script>
-    <script src="frontend/js/auth.js"></script>
+  <script src="/js/auth.js"></script>
 </head>
 <body>
   <header class="header main-header" id="mainHeader">
     <div class="top_header header-inner container">
       <div class="logo-wrap">
-        <a class="logo" href="index.html">
+  <a class="logo" href="/index.html">
           <span class="brand">BUILDSTORE</span>
         </a>
         <div class="hammer" id="hammer" title="Строительный молоток" aria-hidden="true">
@@ -23,8 +23,8 @@
       </div>
 
       <nav class="main-nav" id="mainNav">
-        <a href="index.html">Главная</a>
-        <a href="frontend/listings.html">Категории</a>
+  <a href="/index.html">Главная</a>
+  <a href="/frontend/listings.html">Категории</a>
         <a href="#">Для бизнеса</a>
         <a href="#">Доставка</a>
         <a href="#">Контакты</a>
@@ -32,15 +32,15 @@
 
       <div class="header-actions">
         <div class="auth-links">
-          <a href="frontend/auth.html" id="loginLink">Вход</a>
-          <a href="frontend/reg.html" id="regLink">Регистрация</a>
+          <a href="/frontend/auth.html" id="loginLink">Вход</a>
+          <a href="/frontend/reg.html" id="regLink">Регистрация</a>
         </div>
 
         <div class="cart" id="cartBtn" title="Корзина">
           🛒 <span class="cart-badge" id="cartBadge">0</span>
         </div>
 
-        <a class="btn add-listing" href="frontend/add.html" id="addBtn">Добавить объявление</a>
+  <a class="btn add-listing" href="/frontend/add.html" id="addBtn">Добавить объявление</a>
       </div>
     </div>
   </header>
@@ -48,7 +48,7 @@
   <!-- Hero video banner -->
   <div class="hero" id="hero">
     <video autoplay muted loop playsinline id="heroVideo">
-      <source src="frontend/img/hero.mp4" type="video/mp4">
+  <source src="/frontend/img/hero.mp4" type="video/mp4">
     </video>
     <div class="overlay"></div>
     <div class="hero-content">
@@ -153,7 +153,7 @@
     });
 
     // 🔹 Загрузка списка объявлений
-    async function loadListings(q = '') {
+  async function loadListings(q = '') {
       // store latest raw results so filters can operate client-side
       window.__latestListings = window.__latestListings || [];
       const root = document.getElementById('listings');
@@ -168,15 +168,19 @@
           </div>
         </div>
       `;
-      try {
-  const res = await fetch('/api/listings' + (q ? ('?q=' + encodeURIComponent(q)) : ''));
-        const data = await res.json();
+  try {
+  // allow passing a full query string (starts with '?') or a simple search term
+  let fetchUrl;
+  if (q && q.startsWith('?')) fetchUrl = '/api/listings' + q;
+  else fetchUrl = '/api/listings' + (q ? ('?q=' + encodeURIComponent(q)) : '');
+  const res = await fetch(fetchUrl);
+    const data = await res.json();
         if (!Array.isArray(data)) {
           root.innerText = 'Ошибка формата ответа';
           return;
         }
         if (data.length === 0) {
-          root.innerHTML = '<div>Объявлений пока нет.</div>';
+          const msg = document.createElement('div'); msg.textContent = 'Объявлений пока нет.'; root.innerHTML = ''; root.appendChild(msg);
           return;
         }
         root.innerHTML = '';
@@ -196,27 +200,63 @@
           const reviews = item.reviewsCount || 0;
           const inStock = (item.in_stock === undefined) ? (item.stock ? true : false) : Boolean(item.in_stock);
           const isHot = item.is_hot || (item.tags && item.tags.indexOf('hot') !== -1);
-          card.innerHTML = `
-            <div class="preview">
-              ${hasVideo ? (`<video class="preview-video" muted loop playsinline preload="metadata"><source src="${videoUrl}" type="video/mp4"></video>`) : (`<img class="thumb" src="${imgUrl}" alt="${item.title}">`)}
-              ${discount ? `<div class="discount">-${discount}%</div>` : ''}
-              ${isHot ? `<div class="hot-badge">🔥 Хит продаж</div>` : ''}
-            </div>
-            <div class="meta">
-              <div>
-                <div class="title">${item.title}</div>
-                <div class="muted small">${item.category || ''} • ${item.location || ''}</div>
-                <div class="rating">⭐ ${rating} (${reviews})</div>
-              </div>
-              <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-                <div style="display:flex; gap:8px; align-items:center;">
-                  <div class="price">${priceText}</div>
-                </div>
-                <div class="stock">${inStock ? '✅ В наличии' : '❌ Нет в наличии'}</div>
-                <a class="btn open-btn" href="frontend/listings.html?id=${item.id}">Открыть →</a>
-              </div>
-            </div>
-          `;
+
+          // build preview
+          const preview = document.createElement('div');
+          preview.className = 'preview';
+          if (hasVideo) {
+            const video = document.createElement('video');
+            video.className = 'preview-video';
+            video.muted = true; video.loop = true; video.playsInline = true; video.preload = 'metadata';
+            const src = document.createElement('source');
+            src.src = videoUrl;
+            src.type = 'video/mp4';
+            video.appendChild(src);
+            preview.appendChild(video);
+          } else {
+            const img = document.createElement('img');
+            img.className = 'thumb';
+            img.alt = item.title || '';
+            img.src = imgUrl;
+            img.addEventListener('error', function onErr(){ this.removeEventListener('error', onErr); this.src = '/img/placeholder.svg'; });
+            preview.appendChild(img);
+          }
+          if (discount) {
+            const d = document.createElement('div'); d.className = 'discount'; d.textContent = `-${discount}%`; preview.appendChild(d);
+          }
+          if (isHot) {
+            const h = document.createElement('div'); h.className = 'hot-badge'; h.textContent = '🔥 Хит продаж'; preview.appendChild(h);
+          }
+
+          // build meta
+          const meta = document.createElement('div'); meta.className = 'meta';
+          const metaLeft = document.createElement('div');
+
+          const titleDiv = document.createElement('div'); titleDiv.className = 'title'; titleDiv.textContent = item.title || '';
+          const muted = document.createElement('div'); muted.className = 'muted small'; muted.textContent = ((item.category || '') + ' • ' + (item.location || '')).trim();
+          const ratingDiv = document.createElement('div'); ratingDiv.className = 'rating'; ratingDiv.textContent = `⭐ ${rating} (${reviews})`;
+
+          metaLeft.appendChild(titleDiv);
+          metaLeft.appendChild(muted);
+          metaLeft.appendChild(ratingDiv);
+
+          const metaRight = document.createElement('div'); metaRight.style.display = 'flex'; metaRight.style.flexDirection = 'column'; metaRight.style.alignItems = 'flex-end'; metaRight.style.gap = '8px';
+          const priceWrap = document.createElement('div'); priceWrap.style.display = 'flex'; priceWrap.style.gap = '8px'; priceWrap.style.alignItems = 'center';
+          const priceEl = document.createElement('div'); priceEl.className = 'price'; priceEl.textContent = priceText;
+          priceWrap.appendChild(priceEl);
+          const stock = document.createElement('div'); stock.className = 'stock'; stock.textContent = inStock ? '✅ В наличии' : '❌ Нет в наличии';
+          const openA = document.createElement('a'); openA.className = 'btn open-btn'; openA.href = '/frontend/listings.html?id=' + encodeURIComponent(item.id); openA.textContent = 'Открыть →';
+
+          metaRight.appendChild(priceWrap);
+          metaRight.appendChild(stock);
+          metaRight.appendChild(openA);
+
+          meta.appendChild(metaLeft);
+          meta.appendChild(metaRight);
+
+          card.appendChild(preview);
+          card.appendChild(meta);
+
           card.classList.add('slide-in');
           root.appendChild(card);
           // add animate-in with small stagger
@@ -263,65 +303,35 @@
       // show filtersPanel when a specific category selected
       const panel = document.getElementById('filtersPanel');
       if(panel) panel.hidden = !cat;
-      // apply client-side filter
-      applyFilters({ category: cat });
+      // build server-side query for this category and load from server
+      const params = new URLSearchParams();
+      if (cat) params.set('category', cat);
+      // update history (so back button works)
+      history.replaceState(null, '', cat ? ('?cat=' + encodeURIComponent(cat)) : window.location.pathname);
+      loadListings('?' + params.toString());
     }
 
-    // Apply filters to cached listings and re-render results
+    // Apply filters by asking the server for filtered results
     function applyFilters(extra = {}){
-      let list = (window.__latestListings || []).slice();
       const inStock = document.getElementById('fInStock')?.checked;
       const onlyDiscount = document.getElementById('fDiscount')?.checked;
       const minRating = Number(document.getElementById('fRating')?.value || 0);
       const maxPrice = Number(document.getElementById('fMaxPrice')?.value || 0) || 0;
       const category = (extra.category !== undefined) ? extra.category : (document.querySelector('.category-tile.active')?.dataset.cat || '');
 
-      if(category) list = list.filter(i => (i.category || '') === category);
-      if(inStock) list = list.filter(i => (i.in_stock === undefined) ? Boolean(i.stock) : Boolean(i.in_stock));
-      if(onlyDiscount) list = list.filter(i => Number(i.discount) > 0);
-      if(minRating) list = list.filter(i => Number(i.rating || 0) >= minRating);
-      if(maxPrice) list = list.filter(i => Number(i.price || 0) <= maxPrice);
+      const params = new URLSearchParams();
+      if (category) params.set('category', category);
+      if (inStock) params.set('in_stock', 'true');
+      if (onlyDiscount) params.set('discount', 'true');
+      if (minRating) params.set('minRating', String(minRating));
+      if (maxPrice) params.set('maxPrice', String(maxPrice));
 
-      // render filtered list (reuse rendering logic but simple)
-      const root = document.getElementById('listings');
-      root.innerHTML = '';
-      if(list.length === 0){ root.innerHTML = '<div>Подходящих объявлений не найдено.</div>'; return; }
-      list.forEach((item, idx) => {
-        const card = document.createElement('article');
-        card.className = 'card';
-        const hasVideo = item.videoPath || item.videoBase64;
-        const imgUrl = item.imagePath || (item.imageBase64 ? (`data:image/*;base64,${item.imageBase64}`) : `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`);
-        const videoUrl = item.videoPath || (item.videoBase64 ? (`data:video/mp4;base64,${item.videoBase64}`) : '');
-        const priceText = item.price ? (item.price + ' ₽') : 'Цена по договорённости';
-        const discount = item.discount || 0;
-        const rating = item.rating || 0;
-        const reviews = item.reviewsCount || 0;
-        const inStock = (item.in_stock === undefined) ? (item.stock ? true : false) : Boolean(item.in_stock);
-        const isHot = item.is_hot || (item.tags && item.tags.indexOf('hot') !== -1);
-        card.innerHTML = `
-          <div class="preview">
-            ${hasVideo ? (`<video class="preview-video" muted loop playsinline preload="metadata"><source src="${videoUrl}" type="video/mp4"></video>`) : (`<img class="thumb" src="${imgUrl}" alt="${item.title}">`)}
-            ${discount ? `<div class="discount">-${discount}%</div>` : ''}
-            ${isHot ? `<div class="hot-badge">🔥 Хит продаж</div>` : ''}
-          </div>
-          <div class="meta">
-            <div>
-              <div class="title">${item.title}</div>
-              <div class="muted small">${item.category || ''} • ${item.location || ''}</div>
-              <div class="rating">⭐ ${rating} (${reviews})</div>
-            </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-              <div style="display:flex; gap:8px; align-items:center;">
-                <div class="price">${priceText}</div>
-              </div>
-              <div class="stock">${inStock ? '✅ В наличии' : '❌ Нет в наличии'}</div>
-              <a class="btn open-btn" href="frontend/listings.html?id=${item.id}">Открыть →</a>
-            </div>
-          </div>
-        `;
-        root.appendChild(card);
-        setTimeout(()=> card.classList.add('animate-in'), 80 * idx + 50);
-      });
+      const q = '?' + params.toString();
+      // show results view
+      const resultsGrid = document.getElementById('listings');
+      if(resultsGrid){ /* ensure results area visible if page has separate panels */ }
+      // call server to fetch filtered results
+      loadListings(q);
     }
 
     // filters actions
@@ -400,14 +410,10 @@
       hammer.addEventListener('mouseleave', ()=>{ hammer.style.transform = ''; });
     }
 
-    // cart add demo: animation when cartBadge increments
+    // cart: placeholder for future real cart implementation
     const cartBadge = document.getElementById('cartBadge');
     const cartBtn = document.getElementById('cartBtn');
-    function addToCartDemo(){
-      let n = Number(cartBadge.textContent || '0'); n++; cartBadge.textContent = n; cartBtn.classList.add('added'); setTimeout(()=>cartBtn.classList.remove('added'),700);
-    }
-    // For demo: clicking the cart will simulate adding
-    cartBtn.addEventListener('click', ()=> addToCartDemo());
+    // NOTE: demo behavior removed to avoid misleading users. Implement a real cart (localStorage + /api/cart) if desired.
 
     // Hero search wiring: combine category + query, call loadListings and animate cards
     const heroFind = document.getElementById('heroFind');

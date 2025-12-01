@@ -63,20 +63,29 @@ router.post('/forgot', (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email обязателен' });
 
+  // Note: we intentionally never reveal whether an email exists in the system.
+  // Always respond with a generic success message so attackers cannot enumerate accounts.
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-    if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+    if (!user) {
+      // generic reply
+      return res.json({ message: 'Если email зарегистрирован, вы получите код.' });
+    }
 
     // генерируем 6-значный код
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     // сохраняем код и метку времени
     const now = Date.now();
     db.run('UPDATE users SET reset_token = ?, reset_requested_at = ? WHERE id = ?', [code, now, user.id], (err2) => {
-      if (err2) return res.status(500).json({ error: 'Не удалось сохранить код' });
+      if (err2) {
+        console.error('Не удалось сохранить код сброса пароля', err2);
+        // still return generic message to avoid leaking info
+        return res.json({ message: 'Если email зарегистрирован, вы получите код.' });
+      }
 
       // отправляем по email, если настроен transporter
       if (!transporter) {
         console.log('Email transporter not configured; code:', code);
-        return res.json({ message: 'Код восстановления сгенерирован. (Email не настроен)' });
+        return res.json({ message: 'Если email зарегистрирован, вы получите код.' });
       }
 
       const mail = {
@@ -89,9 +98,10 @@ router.post('/forgot', (req, res) => {
       transporter.sendMail(mail, (errSend, info) => {
         if (errSend) {
           console.error('Mail send error', errSend);
-          return res.json({ message: 'Код сгенерирован, но не удалось отправить email' });
+          return res.json({ message: 'Если email зарегистрирован, вы получите код.' });
         }
-        res.json({ message: 'Код отправлен на email' });
+        // Regardless of success detail, return the same generic message
+        return res.json({ message: 'Если email зарегистрирован, вы получите код.' });
       });
     });
   });

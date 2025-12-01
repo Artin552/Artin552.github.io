@@ -7,16 +7,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Список объявлений — СтройМаркет</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css">
     <script>
       // include shared auth helper
     </script>
-    <script src="js/auth.js"></script>
+  <script src="/js/auth.js"></script>
 </head>
 <body>
   <header class="header">
     <div class="container inner">
-      <a class="logo" href="index.html"><span class="mark"></span>СтройМаркет</a>
+  <a class="logo" href="/index.html"><span class="mark"></span>СтройМаркет</a>
       <div style="flex:1; margin:0 16px;">
         <div class="search-bar">
           <input id="searchInput" placeholder="Поиск по объявлениям">
@@ -24,8 +24,8 @@
         </div>
       </div>
       <div style="display:flex; gap:8px; align-items:center">
-        <a href="auth.html" class="btn secondary">Вход</a>
-        <a href="add.html" class="btn">Добавить</a>
+  <a href="/frontend/auth.html" class="btn secondary">Вход</a>
+  <a href="/frontend/add.html" class="btn">Добавить</a>
       </div>
     </div>
   </header>
@@ -72,34 +72,44 @@
         const res = await fetch('/api/listings/' + encodeURIComponent(id));
         if(!res.ok){ root.innerText = 'Объявление не найдено'; return; }
         const item = await res.json();
-        const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/1200/700`;
+  const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/1200/700`;
         const created = item.created_at ? new Date(Number(item.created_at)) : null;
         const dateStr = created ? created.toLocaleDateString('ru-RU', { year:'numeric', month:'long', day:'numeric' }) : '';
-        root.innerHTML = `
-          <div class="listing-detail">
-            <div class="listing-header">
-              <div class="listing-title">${item.title}</div>
-              <div class="listing-date muted small">${dateStr}</div>
-            </div>
+        // build detail view safely using DOM APIs
+        const detail = document.createElement('div'); detail.className = 'listing-detail';
 
-            <div class="listing-image-wrapper">
-              <img class="listing-image" src="${imgUrl}" alt="${item.title}">
-            </div>
+        const header = document.createElement('div'); header.className = 'listing-header';
+        const titleEl = document.createElement('div'); titleEl.className = 'listing-title'; titleEl.textContent = item.title || '';
+        const dateEl = document.createElement('div'); dateEl.className = 'listing-date muted small'; dateEl.textContent = dateStr;
+        header.appendChild(titleEl); header.appendChild(dateEl);
 
-            <div class="listing-body">
-              <div class="listing-desc">${item.description || ''}</div>
-              <div class="listing-meta muted small">${item.category || ''}</div>
-            </div>
+        const imgWrap = document.createElement('div'); imgWrap.className = 'listing-image-wrapper';
+        const imgEl = document.createElement('img'); imgEl.className = 'listing-image'; imgEl.alt = item.title || ''; imgEl.src = imgUrl;
+        imgEl.addEventListener('error', function onErr(){ imgEl.removeEventListener('error', onErr); imgEl.src = '/img/placeholder.svg'; });
+        imgWrap.appendChild(imgEl);
 
-            <div class="listing-cta">
-              <h3>Готовы купить?</h3>
-              <p class="muted">Свяжитесь с нами или оформите заказ онлайн.</p>
-              <div style="margin-top:12px;"><a class="btn" href="#">Оформить</a></div>
-            </div>
+        const body = document.createElement('div'); body.className = 'listing-body';
+        const desc = document.createElement('div'); desc.className = 'listing-desc'; desc.textContent = item.description || '';
+        const meta = document.createElement('div'); meta.className = 'listing-meta muted small'; meta.textContent = item.category || '';
+        body.appendChild(desc); body.appendChild(meta);
 
-            <div style="text-align:center; margin:28px 0 48px;"><a href="../index.html" class="btn secondary">← Назад</a></div>
-          </div>
-        `;
+        const cta = document.createElement('div'); cta.className = 'listing-cta';
+        const ctaH = document.createElement('h3'); ctaH.textContent = 'Готовы купить?';
+        const ctaP = document.createElement('p'); ctaP.className = 'muted'; ctaP.textContent = 'Свяжитесь с нами или оформите заказ онлайн.';
+        const ctaBtnWrap = document.createElement('div'); ctaBtnWrap.style.marginTop = '12px';
+        const ctaBtn = document.createElement('a'); ctaBtn.className = 'btn'; ctaBtn.href = '#'; ctaBtn.textContent = 'Оформить';
+        ctaBtnWrap.appendChild(ctaBtn);
+        cta.appendChild(ctaH); cta.appendChild(ctaP); cta.appendChild(ctaBtnWrap);
+
+        const backWrap = document.createElement('div'); backWrap.style.textAlign = 'center'; backWrap.style.margin = '28px 0 48px';
+        const backA = document.createElement('a'); backA.href = '/index.html'; backA.className = 'btn secondary'; backA.textContent = '← Назад'; backWrap.appendChild(backA);
+
+        detail.appendChild(header);
+        detail.appendChild(imgWrap);
+        detail.appendChild(body);
+        detail.appendChild(cta);
+        detail.appendChild(backWrap);
+        root.innerHTML = ''; root.appendChild(detail);
         // скрыть глобальный header для детального вида
         const pageHeader = document.querySelector('header.header');
         if(pageHeader) pageHeader.style.display = 'none';
@@ -117,33 +127,38 @@
       const data = await res.json();
       root2.innerHTML = '';
       data.forEach(item=>{
-        const card = document.createElement('article');
-        card.className = 'card';
+        const card = document.createElement('article'); card.className = 'card';
         const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`;
-        card.innerHTML = `
-          <img class="thumb" src="${imgUrl}" alt="${item.title}">
-          <div class="meta">
-            <div>
-              <div class="title">${item.title}</div>
-              <div class="muted small">${item.category}</div>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div class="price">${item.price ? item.price + ' ₽' : 'По договоренности'}</div>
-              <a class="btn secondary" href="listings.html?id=${item.id}">Открыть</a>
-            </div>
-          </div>
-        `;
+        const img = document.createElement('img'); img.className = 'thumb'; img.alt = item.title || ''; img.src = imgUrl;
+        img.addEventListener('error', function onErr(){ img.removeEventListener('error', onErr); img.src = '/img/placeholder.svg'; });
+
+        const meta = document.createElement('div'); meta.className = 'meta';
+        const left = document.createElement('div');
+        const title = document.createElement('div'); title.className = 'title'; title.textContent = item.title || '';
+        const muted = document.createElement('div'); muted.className = 'muted small'; muted.textContent = item.category || '';
+        left.appendChild(title); left.appendChild(muted);
+
+        const right = document.createElement('div'); right.style.display = 'flex'; right.style.justifyContent = 'space-between'; right.style.alignItems = 'center';
+        const price = document.createElement('div'); price.className = 'price'; price.textContent = item.price ? (item.price + ' ₽') : 'По договоренности';
+        const openA = document.createElement('a'); openA.className = 'btn secondary'; openA.href = 'listings.html?id=' + encodeURIComponent(item.id); openA.textContent = 'Открыть';
+        right.appendChild(price); right.appendChild(openA);
+
+        meta.appendChild(left); meta.appendChild(right);
+        card.appendChild(img); card.appendChild(meta);
         root2.appendChild(card);
       });
       // pagination controls
       const pager = document.getElementById('pager');
       if(pager) pager.remove();
-      const p = document.createElement('div'); p.id='pager'; p.style.textAlign='center'; p.style.marginTop='12px';
-      const totalPages = Math.max(1, Math.ceil(total / __limit));
-      p.innerHTML = `<button class="btn" id="prevPage" ${__page<=1?'disabled':''}>← Назад</button> <span style="margin:0 8px">Страница ${__page} из ${totalPages}</span> <button class="btn" id="nextPage" ${__page>=totalPages?'disabled':''}>Далее →</button>`;
-      root2.parentNode.appendChild(p);
-      document.getElementById('prevPage').addEventListener('click', ()=>{ if(__page>1){ __page--; loadAll(q); } });
-      document.getElementById('nextPage').addEventListener('click', ()=>{ if(__page<totalPages){ __page++; loadAll(q); } });
+  const p = document.createElement('div'); p.id='pager'; p.style.textAlign='center'; p.style.marginTop='12px';
+  const totalPages = Math.max(1, Math.ceil(total / __limit));
+  const prevBtn = document.createElement('button'); prevBtn.className = 'btn'; prevBtn.id = 'prevPage'; prevBtn.type = 'button'; prevBtn.textContent = '← Назад'; if(__page<=1) prevBtn.disabled = true;
+  const pageInfo = document.createElement('span'); pageInfo.style.margin = '0 8px'; pageInfo.textContent = `Страница ${__page} из ${totalPages}`;
+  const nextBtn = document.createElement('button'); nextBtn.className = 'btn'; nextBtn.id = 'nextPage'; nextBtn.type = 'button'; nextBtn.textContent = 'Далее →'; if(__page>=totalPages) nextBtn.disabled = true;
+  p.appendChild(prevBtn); p.appendChild(pageInfo); p.appendChild(nextBtn);
+  root2.parentNode.appendChild(p);
+  prevBtn.addEventListener('click', ()=>{ if(__page>1){ __page--; loadAll(q); } });
+  nextBtn.addEventListener('click', ()=>{ if(__page<totalPages){ __page++; loadAll(q); } });
     }catch(e){
       root2.innerText = 'Ошибка загрузки';
     }
@@ -196,38 +211,47 @@
     const currentCat = new URLSearchParams(window.location.search).get('cat') || '';
   // compute counts per category
   const counts = (listings || []).reduce((acc, it) => { if(!it.category) return acc; acc[it.category] = (acc[it.category] || 0) + 1; return acc; }, {});
-  const allBtn = document.createElement('button'); allBtn.className='category-tile' + (currentCat === '' ? ' active' : ''); allBtn.dataset.cat=''; allBtn.setAttribute('aria-pressed', currentCat === ''); allBtn.innerHTML = 'Все <span class="cat-count">' + (listings ? listings.length : 0) + '</span>'; container.appendChild(allBtn);
-  cats.forEach(c=>{ const b=document.createElement('button'); b.className='category-tile' + (currentCat === c ? ' active' : ''); b.dataset.cat=c; b.setAttribute('aria-pressed', currentCat === c); b.innerHTML = `${c} <span class="cat-count">${counts[c] || 0}</span>`; container.appendChild(b); });
-    // tile click navigates to listings?cat=... (full page navigation)
+  const allBtn = document.createElement('button'); allBtn.className='category-tile' + (currentCat === '' ? ' active' : ''); allBtn.dataset.cat=''; allBtn.setAttribute('aria-pressed', currentCat === '');
+  const allText = document.createTextNode('Все ');
+  const allCount = document.createElement('span'); allCount.className = 'cat-count'; allCount.textContent = (listings ? listings.length : 0);
+  allBtn.appendChild(allText); allBtn.appendChild(allCount); container.appendChild(allBtn);
+  cats.forEach(c=>{ const b=document.createElement('button'); b.className='category-tile' + (currentCat === c ? ' active' : ''); b.dataset.cat=c; b.setAttribute('aria-pressed', currentCat === c); const ct = document.createTextNode(c + ' '); const cnt = document.createElement('span'); cnt.className='cat-count'; cnt.textContent = counts[c] || 0; b.appendChild(ct); b.appendChild(cnt); container.appendChild(b); });
+    // tile click: load listings for this category via server query
     container.querySelectorAll('.category-tile').forEach(btn=>btn.addEventListener('click', ()=>{
       const cat = btn.dataset.cat || '';
-      const href = window.location.pathname + (cat ? ('?cat=' + encodeURIComponent(cat)) : '');
-      window.location.href = href;
+      // update UI and history
+      history.replaceState(null, '', cat ? ('?cat=' + encodeURIComponent(cat)) : window.location.pathname);
+      document.getElementById('resultsGrid').hidden = false;
+      document.getElementById('categoriesSection').hidden = true;
+      document.getElementById('filtersPanel').hidden = false;
+      // call server with category filter
+      const q = '?category=' + encodeURIComponent(cat);
+      loadAll(q);
     }));
   }
 
   function applyFilters(extra = {}){
-    const list = (window.__latestListings || []).slice();
+    // Build server-side query parameters and call loadAll with a query string
     const inStock = document.getElementById('fInStock')?.checked;
     const onlyDiscount = document.getElementById('fDiscount')?.checked;
     const minRating = Number(document.getElementById('fRating')?.value || 0);
     const maxPrice = Number(document.getElementById('fMaxPrice')?.value || 0) || 0;
     const category = (extra.category !== undefined) ? extra.category : (document.querySelector('.category-tile.active')?.dataset.cat || '');
-    let filtered = list;
-    if(category) filtered = filtered.filter(i=> (i.category||'') === category);
-    if(inStock) filtered = filtered.filter(i=> (i.in_stock===undefined) ? Boolean(i.stock) : Boolean(i.in_stock));
-    if(onlyDiscount) filtered = filtered.filter(i=> Number(i.discount) > 0);
-    if(minRating) filtered = filtered.filter(i=> Number(i.rating||0) >= minRating);
-    if(maxPrice) filtered = filtered.filter(i=> Number(i.price||0) <= maxPrice);
-    // render
-    const root = document.getElementById('listings'); root.innerHTML='';
-    if(filtered.length===0){ root.innerHTML = '<div>Подходящих объявлений не найдено.</div>'; return; }
-    filtered.forEach(item=>{
-      const card=document.createElement('article'); card.className='card';
-      const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`;
-      card.innerHTML = `<img class="thumb" src="${imgUrl}" alt="${item.title}"><div class="meta"><div><div class="title">${item.title}</div><div class="muted small">${item.category||''}</div></div><div style="display:flex;justify-content:space-between;align-items:center;"><div class="price">${item.price?item.price+' ₽':'По договоренности'}</div><a class="btn secondary" href="listings.html?id=${item.id}">Открыть</a></div></div>`;
-      root.appendChild(card);
-    });
+
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (inStock) params.set('in_stock', 'true');
+    if (onlyDiscount) params.set('discount', 'true');
+    if (minRating) params.set('minRating', String(minRating));
+    if (maxPrice) params.set('maxPrice', String(maxPrice));
+
+    const q = '?' + params.toString();
+    // show results view
+    document.getElementById('resultsGrid').hidden = false;
+    document.getElementById('categoriesSection').hidden = true;
+    document.getElementById('filtersPanel').hidden = false;
+    // call server to fetch filtered results
+    loadAll(q);
   }
 
   // Hook into loadAll to cache results and populate categories

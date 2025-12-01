@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Вход / Регистрация — СтройМаркет</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
   <main class="auth-container">
@@ -23,6 +23,7 @@
       <div class="form__group">
         <input class="form__field" id="rpassword" name="password" placeholder="Пароль" type="password" minlength="6" required />
         <label class="form__label" for="rpassword">Пароль</label>
+        <button type="button" class="icon-btn" id="toggleRPassword" aria-label="Показать пароль" style="position:absolute; right:14px; top:28px; background:transparent; border:none; font-size:14px">👁️</button>
       </div>
       <div class="auth-btns">
         <button class="btn" type="submit">Зарегистрироваться</button>
@@ -61,6 +62,16 @@ registerForm.addEventListener('submit', async (e) => {
     alert('Ошибка соединения с сервером');
   }
 });
+// toggle show/hide for registration password
+const toggleRPassword = document.getElementById('toggleRPassword');
+if(toggleRPassword){
+  toggleRPassword.addEventListener('click', ()=>{
+    const p = document.getElementById('rpassword');
+    if(!p) return;
+    if(p.type === 'password'){ p.type = 'text'; toggleRPassword.textContent = '🙈'; toggleRPassword.setAttribute('aria-label','Скрыть пароль'); }
+    else { p.type = 'password'; toggleRPassword.textContent = '👁️'; toggleRPassword.setAttribute('aria-label','Показать пароль'); }
+  });
+}
 </script>
  
 </body>

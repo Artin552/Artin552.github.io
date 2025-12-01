@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Вход / Регистрация — СтройМаркет</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <script src="js/auth.js"></script>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/auth.js"></script>
 </head>
 <body>
   <main class="auth-container">
@@ -19,16 +19,17 @@
       <div class="form__group">
         <input class="form__field" id="password" name="password" placeholder="Пароль" type="password" minlength="6" required />
         <label class="form__label" for="password">Пароль</label>
+        <button type="button" class="icon-btn" id="togglePassword" aria-label="Показать пароль" style="position:absolute; right:14px; top:28px; background:transparent; border:none; font-size:14px">👁️</button>
       </div>
 
       <div class="forgot-link">
-        <a href="reg.html">Регистрация</a> |
-        <a href="forgot.html">Забыли пароль?</a>
+        <a href="/frontend/reg.html">Регистрация</a> |
+        <a href="/frontend/forgot.html">Забыли пароль?</a>
       </div>
 
       <div class="auth-btns">
         <button class="btn" type="submit">Войти</button>
-        <a href="index.html" class="btn secondary">Отмена</a>
+        <a href="/index.html" class="btn secondary">Отмена</a>
       </div>
     </form>
 
@@ -66,13 +67,23 @@ document.addEventListener('DOMContentLoaded', () => {
   if (data.email) sessionStorage.setItem('userEmail', data.email);
 
   // Переход на главную (index.html в корне проекта)
-  window.location.href = '../index.html';
+  window.location.href = '/index.html';
     } catch (err) {
       console.error('Ошибка запроса:', err);
       alert('Не удалось соединиться с сервером.');
     }
   });
 });
+  // toggle show/hide password
+  const togglePassword = document.getElementById('togglePassword');
+  if(togglePassword){
+    togglePassword.addEventListener('click', ()=>{
+      const p = document.getElementById('password');
+      if(!p) return;
+      if(p.type === 'password'){ p.type = 'text'; togglePassword.textContent = '🙈'; togglePassword.setAttribute('aria-label','Скрыть пароль'); }
+      else { p.type = 'password'; togglePassword.textContent = '👁️'; togglePassword.setAttribute('aria-label','Показать пароль'); }
+    });
+  }
 </script>
  
 

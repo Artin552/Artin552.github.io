@@ -1,14 +1,14 @@
 <!doctype html>
 <html lang="ru">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Личный кабинет</title><link rel="stylesheet" href="css/styles.css"><script src="js/auth.js"></script></head>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Личный кабинет</title><link rel="stylesheet" href="/css/styles.css"><script src="/js/auth.js"></script></head>
 <body>
   <main class="container" style="padding-top:40px">
     <h2>Мои объявления</h2>
     <div id="myListings" class="grid">
       <!-- JS загрузит объявления текущего пользователя -->
     </div>
-    <div style="margin-top:12px">
-      <a href="add.html" class="btn">Добавить объявление</a>
+      <div style="margin-top:12px">
+      <a href="/frontend/add.html" class="btn">Добавить объявление</a>
     </div>
   </main>
 
@@ -26,17 +26,51 @@
         const card = document.createElement('article');
         card.className = 'card';
         const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`;
-        card.innerHTML = `
-          <img class="thumb" src="${imgUrl}" alt="${item.title}">
-          <div class="meta">
-            <div class="title">${item.title}</div>
-            <div class="muted">${item.category}</div>
-            <div style="display:flex;gap:8px;margin-top:8px;">
-              <button class="btn secondary" onclick="editItem('${item.id}', '${escape(item.title)}', '${item.price || ''}')">Редактировать</button>
-              <button class="btn" onclick="deleteItem('${item.id}')">Удалить</button>
-            </div>
-          </div>
-        `;
+        // build content safely using DOM APIs
+        const img = document.createElement('img');
+        img.className = 'thumb';
+        img.alt = item.title || '';
+        img.src = imgUrl;
+        img.setAttribute('onerror', "this.onerror=null; this.src='/img/placeholder.svg'");
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'title';
+        titleDiv.textContent = item.title || '';
+
+        const muted = document.createElement('div');
+        muted.className = 'muted';
+        muted.textContent = item.category || '';
+
+        const actionsWrap = document.createElement('div');
+        actionsWrap.style.display = 'flex';
+        actionsWrap.style.gap = '8px';
+        actionsWrap.style.marginTop = '8px';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn secondary';
+        editBtn.type = 'button';
+        editBtn.textContent = 'Редактировать';
+        editBtn.addEventListener('click', () => editItem(item.id, item.title, item.price || ''));
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn';
+        delBtn.type = 'button';
+        delBtn.textContent = 'Удалить';
+        delBtn.addEventListener('click', () => deleteItem(item.id));
+
+        actionsWrap.appendChild(editBtn);
+        actionsWrap.appendChild(delBtn);
+
+        meta.appendChild(titleDiv);
+        meta.appendChild(muted);
+        meta.appendChild(actionsWrap);
+
+        card.appendChild(img);
+        card.appendChild(meta);
+
         root.appendChild(card);
       });
     }catch(e){ console.error(e) }
