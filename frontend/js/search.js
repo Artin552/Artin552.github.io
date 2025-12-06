@@ -135,7 +135,7 @@ async function loadListings(q = '') {
 
       const openA = document.createElement('a');
       openA.className = 'btn open-btn';
-      openA.href = '/frontend/listings.html?view=detail&id=' + encodeURIComponent(item.id);
+      openA.href = '/frontend/product.html?id=' + encodeURIComponent(item.id);
       openA.textContent = 'Открыть →';
 
       metaRight.appendChild(priceEl);

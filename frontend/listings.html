@@ -34,7 +34,6 @@
       <h2>Категории</h2>
       <div id="categoryTiles" class="category-tiles">
         <!-- fallback tiles -->
-        <button class="category-tile" data-cat="">Все</button>
       </div>
     </section>
 
@@ -62,75 +61,10 @@
   let __page = 1; const __limit = 12;
   async function loadAll(q=''){
     const root = document.getElementById('listings');
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    if(id){
-      root.innerHTML = 'Загрузка объявления...';
-      try{
-        const res = await fetch('/api/listings/' + encodeURIComponent(id));
-        if(!res.ok){ root.innerText = 'Объявление не найдено'; return; }
-        const item = await res.json();
-  const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/1200/700`;
-        const created = item.created_at ? new Date(Number(item.created_at)) : null;
-        const dateStr = created ? created.toLocaleDateString('ru-RU', { year:'numeric', month:'long', day:'numeric' }) : '';
-        // build detail view safely using DOM APIs
-        const detail = document.createElement('div'); detail.className = 'listing-detail';
-
-        const header = document.createElement('div'); header.className = 'listing-header';
-        const titleEl = document.createElement('div'); titleEl.className = 'listing-title'; titleEl.textContent = item.title || '';
-        const dateEl = document.createElement('div'); dateEl.className = 'listing-date muted small'; dateEl.textContent = dateStr;
-        header.appendChild(titleEl); header.appendChild(dateEl);
-
-        const imgWrap = document.createElement('div'); imgWrap.className = 'listing-image-wrapper';
-        const imgEl = document.createElement('img'); imgEl.className = 'listing-image'; imgEl.alt = item.title || ''; imgEl.src = imgUrl;
-        imgEl.addEventListener('error', function onErr(){ imgEl.removeEventListener('error', onErr); imgEl.src = '/img/placeholder.svg'; });
-        imgWrap.appendChild(imgEl);
-
-        const body = document.createElement('div'); body.className = 'listing-body';
-        const desc = document.createElement('div'); desc.className = 'listing-desc'; desc.textContent = item.description || '';
-        const meta = document.createElement('div'); meta.className = 'listing-meta muted small'; meta.textContent = item.category || '';
-        body.appendChild(desc); body.appendChild(meta);
-
-        const cta = document.createElement('div'); cta.className = 'listing-cta';
-        const ctaH = document.createElement('h3'); ctaH.textContent = 'Готовы купить?';
-        const ctaP = document.createElement('p'); ctaP.className = 'muted'; ctaP.textContent = 'Свяжитесь с нами или оформите заказ онлайн.';
-        const ctaBtnWrap = document.createElement('div'); ctaBtnWrap.style.marginTop = '12px';
-        const ctaBtn = document.createElement('a'); ctaBtn.className = 'btn'; ctaBtn.href = '#'; ctaBtn.textContent = 'Оформить';
-        ctaBtnWrap.appendChild(ctaBtn);
-        cta.appendChild(ctaH); cta.appendChild(ctaP); cta.appendChild(ctaBtnWrap);
-
-        const backWrap = document.createElement('div'); backWrap.style.textAlign = 'center'; backWrap.style.margin = '28px 0 48px';
-        const backA = document.createElement('a'); backA.href = '/index.html'; backA.className = 'btn secondary'; backA.textContent = '← Назад'; backWrap.appendChild(backA);
-
-        detail.appendChild(header);
-        detail.appendChild(imgWrap);
-        detail.appendChild(body);
-        detail.appendChild(cta);
-        detail.appendChild(backWrap);
-        root.innerHTML = ''; root.appendChild(detail);
-        // скрыть глобальный header для детального вида
-        const pageHeader = document.querySelector('header.header');
-        if(pageHeader) pageHeader.style.display = 'none';
-        // скрыть категории и фильтры для детального вида
-        const categoriesSection = document.getElementById('categoriesSection');
-        if(categoriesSection) categoriesSection.style.display = 'none';
-        const resultsGrid = document.querySelector('.results-grid');
-        if(resultsGrid) resultsGrid.style.display = 'none';
-      }catch(e){ root.innerText = 'Ошибка загрузки объявления'; }
-      return;
-    }
-
-    // обычный список
+    
+    // Просто загружаем список товаров, не проверяем id
     const root2 = document.getElementById('listings');
     root2.innerHTML = 'Загрузка...';
-    
-    // Показываем все элементы для обычного списка
-    const pageHeader = document.querySelector('header.header');
-    if(pageHeader) pageHeader.style.display = 'block';
-    const categoriesSection = document.getElementById('categoriesSection');
-    if(categoriesSection) categoriesSection.style.display = 'block';
-    const resultsGrid = document.querySelector('.results-grid');
-    if(resultsGrid) resultsGrid.style.display = 'block';
     
     try{
       const query = q ? (q.indexOf('?')===0? q + `&page=${__page}&limit=${__limit}` : ('?q='+encodeURIComponent(q) + `&page=${__page}&limit=${__limit}`)) : (`?page=${__page}&limit=${__limit}`);
@@ -152,7 +86,7 @@
 
         const right = document.createElement('div'); right.style.display = 'flex'; right.style.justifyContent = 'space-between'; right.style.alignItems = 'center';
         const price = document.createElement('div'); price.className = 'price'; price.textContent = item.price ? (item.price + ' ₽') : 'По договоренности';
-        const openA = document.createElement('a'); openA.className = 'btn secondary'; openA.href = '/frontend/listings.html?view=detail&id=' + encodeURIComponent(item.id); openA.textContent = 'Открыть';
+        const openA = document.createElement('a'); openA.className = 'btn secondary'; openA.href = '/frontend/product.html?id=' + encodeURIComponent(item.id); openA.textContent = 'Открыть';
         right.appendChild(price); right.appendChild(openA);
 
         meta.appendChild(left); meta.appendChild(right);
@@ -201,45 +135,113 @@
     loadAll('?q=' + encodeURIComponent(catParam));
   } else {
     // default: show only categories
+    console.log('📍 Loading categories - no cat or q parameter');
     document.getElementById('resultsGrid').hidden = true;
     document.getElementById('categoriesSection').hidden = false;
     // Populate categories without rendering all listings
     (async ()=>{
       try{
+        console.log('📡 Fetching /api/listings...');
         const res = await fetch('/api/listings');
         const data = await res.json();
+        console.log('✅ Got data:', data?.length, 'items');
         window.__latestListings = data || [];
+        console.log('🎯 Calling populateCategoryTiles');
         populateCategoryTiles(window.__latestListings);
-      }catch(e){ console.warn('failed to load categories', e); }
+      }catch(e){ console.error('❌ failed to load categories', e); }
     })();
   }
 
   // --- Category + Filters helpers ---
   function populateCategoryTiles(listings){
+    console.log('🔍 populateCategoryTiles called with', listings?.length, 'listings');
     const container = document.getElementById('categoryTiles');
-    if(!container) return;
+    if(!container) {
+      console.error('❌ Container #categoryTiles not found!');
+      return;
+    }
     const cats = Array.from(new Set((listings||[]).map(it=>it.category).filter(Boolean)));
+    console.log('📦 Found categories:', cats);
+    
+    if(cats.length === 0) {
+      console.warn('⚠️ No categories found!');
+      container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px;">Категории не найдены</div>';
+      return;
+    }
+    
     container.innerHTML = '';
-    const currentCat = new URLSearchParams(window.location.search).get('cat') || '';
-  // compute counts per category
-  const counts = (listings || []).reduce((acc, it) => { if(!it.category) return acc; acc[it.category] = (acc[it.category] || 0) + 1; return acc; }, {});
-  const allBtn = document.createElement('button'); allBtn.className='category-tile' + (currentCat === '' ? ' active' : ''); allBtn.dataset.cat=''; allBtn.setAttribute('aria-pressed', currentCat === '');
-  const allText = document.createTextNode('Все ');
-  const allCount = document.createElement('span'); allCount.className = 'cat-count'; allCount.textContent = (listings ? listings.length : 0);
-  allBtn.appendChild(allText); allBtn.appendChild(allCount); container.appendChild(allBtn);
-  cats.forEach(c=>{ const b=document.createElement('button'); b.className='category-tile' + (currentCat === c ? ' active' : ''); b.dataset.cat=c; b.setAttribute('aria-pressed', currentCat === c); const ct = document.createTextNode(c + ' '); const cnt = document.createElement('span'); cnt.className='cat-count'; cnt.textContent = counts[c] || 0; b.appendChild(ct); b.appendChild(cnt); container.appendChild(b); });
-    // tile click: load listings for this category via server query
-    container.querySelectorAll('.category-tile').forEach(btn=>btn.addEventListener('click', ()=>{
-      const cat = btn.dataset.cat || '';
-      // update UI and history
-      history.replaceState(null, '', cat ? ('?cat=' + encodeURIComponent(cat)) : window.location.pathname);
-      document.getElementById('resultsGrid').hidden = false;
-      document.getElementById('categoriesSection').hidden = true;
-      document.getElementById('filtersPanel').hidden = false;
-      // call server with category filter
-      const q = '?category=' + encodeURIComponent(cat);
-      loadAll(q);
-    }));
+    
+    // compute counts per category
+    const counts = (listings || []).reduce((acc, it) => { if(!it.category) return acc; acc[it.category] = (acc[it.category] || 0) + 1; return acc; }, {});
+    
+    // Create category cards with images
+    cats.forEach(c=>{ 
+      // Find first product in this category for image
+      const firstProduct = (listings || []).find(it=>it.category === c);
+      const imgUrl = firstProduct?.imagePath || `https://picsum.photos/seed/${encodeURIComponent(c)}/300/200`;
+      
+      const card = document.createElement('article'); 
+      card.className = 'category-card';
+      card.style.cursor = 'pointer';
+      card.style.borderRadius = '8px';
+      card.style.overflow = 'hidden';
+      card.style.backgroundColor = '#fff';
+      card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+      card.style.transition = 'transform 0.2s, box-shadow 0.2s';
+      
+      // Add hover effect
+      card.addEventListener('mouseenter', function(){ 
+        this.style.transform = 'translateY(-4px)'; 
+        this.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)'; 
+      });
+      card.addEventListener('mouseleave', function(){ 
+        this.style.transform = 'translateY(0)'; 
+        this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'; 
+      });
+      
+      // Image
+      const img = document.createElement('img'); 
+      img.className = 'thumb'; 
+      img.alt = c; 
+      img.src = imgUrl;
+      img.style.width = '100%';
+      img.style.height = '150px';
+      img.style.objectFit = 'cover';
+      img.addEventListener('error', function(){ img.src = '/img/placeholder.svg'; });
+      
+      // Category name and count
+      const meta = document.createElement('div'); 
+      meta.style.padding = '12px';
+      meta.style.textAlign = 'center';
+      
+      const title = document.createElement('div'); 
+      title.style.fontSize = '16px';
+      title.style.fontWeight = 'bold';
+      title.style.marginBottom = '4px';
+      title.textContent = c;
+      
+      const count = document.createElement('div'); 
+      count.style.fontSize = '14px';
+      count.style.color = '#999';
+      count.textContent = (counts[c] || 0) + ' товаров';
+      
+      meta.appendChild(title);
+      meta.appendChild(count);
+      card.appendChild(img);
+      card.appendChild(meta);
+      
+      // Click handler
+      card.addEventListener('click', ()=>{
+        history.replaceState(null, '', '?cat=' + encodeURIComponent(c));
+        document.getElementById('resultsGrid').hidden = false;
+        document.getElementById('categoriesSection').hidden = true;
+        document.getElementById('filtersPanel').hidden = false;
+        const q = '?category=' + encodeURIComponent(c);
+        loadAll(q);
+      });
+      
+      container.appendChild(card);
+    });
   }
 
   function applyFilters(extra = {}){

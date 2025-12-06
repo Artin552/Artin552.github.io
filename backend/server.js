@@ -134,7 +134,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 // Генерируем маршруты для всех HTML файлов в папке frontend
 // Это позволяет открывать их по двум адресам:
 // /listings.html и /frontend/listings.html
-const frontendHtmlFiles = ['listings.html', 'add.html', 'auth.html', 'dashboard.html', 'reg.html', 'reset.html', 'forgot.html'];
+const frontendHtmlFiles = ['listings.html', 'add.html', 'auth.html', 'dashboard.html', 'reg.html', 'reset.html', 'forgot.html', 'product.html'];
 frontendHtmlFiles.forEach(file => {
   // Первый маршрут: /frontend/filename.html
   app.get(`/frontend/${file}`, (req, res) => {
