@@ -167,7 +167,7 @@ a:hover{ color:var(--accent) }
 }
 .hero .hero-content{ position:relative; z-index:2; color: #fff; text-align:center; padding: 20px; max-width:980px }
 .hero .hero-sub{ color: rgba(255,255,255,0.95); margin-top:8px; font-size:18px }
-.hero h1{ font-size: clamp(26px, 4.6vw, 44px); line-height:1.05; letter-spacing:-0.4px; text-shadow:0 6px 18px rgba(2,6,23,0.45) }
+.hero h1{ font-size: clamp(26px, 4.6vw, 44px); line-height:1.05; letter-spacing:-0.4px; text-shadow:0 6px 20px rgba(199, 209, 255, 0.836) }
 .hero-search{ display:inline-flex; gap:8px; margin-top:14px }
 
 .hero-search{
@@ -892,7 +892,7 @@ textarea{ min-height:120px; resize:vertical }
   box-shadow: var(--soft-elev);
   backdrop-filter: blur(6px) saturate(120%);
 }
-.hero h1{ letter-spacing: -.6px; font-weight:900; font-size: clamp(28px, 5.2vw, 56px); text-shadow: 0 10px 30px rgba(2,6,23,0.5) }
+.hero h1{ letter-spacing: -.6px; font-weight:900; font-size: clamp(28px, 5.2vw, 56px); text-shadow: 0 10px 30px rgba(206, 215, 255, 0.582) }
 .hero .hero-sub{ color: rgba(255,255,255,0.92); font-weight:600 }
 
 /* Hero CTA styling */
@@ -904,7 +904,7 @@ textarea{ min-height:120px; resize:vertical }
   box-shadow: 0 12px 30px rgba(110,68,255,0.12), 0 2px 6px rgba(0,0,0,0.08);
   transition: transform .22s cubic-bezier(.2,.9,.28,1), box-shadow .22s ease;
 }
-.hero-search button:hover, .open-btn:hover, .btn.primary:hover{ transform: translateY(-4px) scale(1.01); box-shadow: 0 26px 70px rgba(110,68,255,0.14) }
+.hero-search button:hover, .open-btn:hover, .btn.primary:hover{ transform: translateY(-4px) scale(1.01); box-shadow: 0 26px 70px rgba(255, 255, 255, 0.14) }
 
 /* Cards: elevate and refine image treatment */
 .card{

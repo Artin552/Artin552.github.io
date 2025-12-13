@@ -4,114 +4,150 @@
 // Этот скрипт загружается на все страницы и управляет:
 // - Отображением кнопок "Вход/Регистрация" для неавторизованных пользователей
 // - Отображением "Профиль/Выход" для авторизованных пользователей
+// - Обработкой формы входа и показом/скрытием пароля (на странице входа)
 // - Сохранением и загрузкой токена и email из localStorage/sessionStorage
 
-(function() {
+(function () {
   // ============================================================
   // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
   // ============================================================
-  
-  // Проверяем, находимся ли мы в папке /frontend/
-  // (нужно для правильного построения ссылок на разные страницы)
+
   function inFrontendFolder() {
     return window.location.pathname.split('/').includes('frontend');
   }
 
-  // Генерируем ссылку на личный кабинет (зависит от текущей папки)
   function dashboardHref() {
     return inFrontendFolder() ? 'dashboard.html' : '/frontend/dashboard.html';
   }
 
-  // Генерируем ссылку на страницу входа
   function authHref() {
     return inFrontendFolder() ? 'auth.html' : '/frontend/auth.html';
   }
 
-  // Генерируем ссылку на страницу регистрации
   function regHref() {
     return inFrontendFolder() ? 'reg.html' : '/frontend/reg.html';
-  }
-
-  // Генерируем ссылку на страницу добавления объявления
-  function addHref() {
-    return inFrontendFolder() ? 'add.html' : '/frontend/add.html';
   }
 
   // ============================================================
   // ОСНОВНАЯ ФУНКЦИЯ: НАСТРОЙКА ССЫЛОК АУТЕНТИФИКАЦИИ
   // ============================================================
   function setupAuthLinks() {
-    // Ищем контейнер для ссылок аутентификации
     const container = document.querySelector('.auth-links');
-    if (!container) return; // Если контейнер не найден, выходим
+    if (!container) return;
 
-    // Получаем токен и email из хранилища
-    // Сначала проверяем sessionStorage (текущая сессия)
-    // Потом проверяем localStorage (сохранённые данные)
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     const email = sessionStorage.getItem('userEmail') || localStorage.getItem('userEmail');
 
-    // Очищаем контейнер чтобы избежать дублирования элементов
     container.innerHTML = '';
 
-    if (token && email) {
-      // ========================
-      // ПОЛЬЗОВАТЕЛЬ АВТОРИЗОВАН
-      // ========================
-      
-      // Создаём ссылку на профиль с email пользователя
-      const profile = document.createElement('a');
-      profile.href = dashboardHref();
-      profile.className = 'btn secondary';
-      profile.textContent = email;
+  if (token && email) {
+  // ========================
+  // ПОЛЬЗОВАТЕЛЬ АВТОРИЗОВАН → ПОКАЗЫВАЕМ ТОЛЬКО КНОПКУ "ПРОФИЛЬ"
+  // ========================
+  
+  const profileBtn = document.createElement('a');
+  profileBtn.href = dashboardHref();
+  profileBtn.className = 'btn secondary';
+  profileBtn.textContent = 'Профиль';
 
-      // Создаём кнопку выхода
-      const logout = document.createElement('button');
-      logout.className = 'btn';
-      logout.textContent = 'Выйти';
-      logout.addEventListener('click', () => {
-        // Удаляем все данные авторизации из обоих хранилищ
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('userEmail');
-        localStorage.removeItem('token');
-        localStorage.removeItem('userEmail');
-        
-        // Перезагружаем страницу чтобы обновить интерфейс
-        window.location.reload();
+  container.appendChild(profileBtn);
+
+} else {
+  // ========================
+  // ПОЛЬЗОВАТЕЛЬ НЕ АВТОРИЗОВАН
+  // ========================
+
+  const login = document.createElement('a');
+  login.href = authHref();
+  login.textContent = 'Вход';
+
+  const reg = document.createElement('a');
+  reg.href = regHref();
+  reg.textContent = 'Регистрация';
+
+  container.appendChild(login);
+  container.appendChild(reg);
+}
+  }
+
+
+
+  // ============================================================
+  // СПЕЦИФИЧЕСКАЯ ЛОГИКА: ТОЛЬКО НА СТРАНИЦЕ ВХОДА
+  // ============================================================
+  function initLoginForm() {
+    const form = document.getElementById('loginForm');
+    if (!form) return; // Если формы нет — выходим
+
+    // Обработка отправки формы
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = form.querySelector('#email')?.value.trim();
+      const password = form.querySelector('#password')?.value.trim();
+
+      if (!email || !password) {
+        alert('Заполните все поля.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (!res.ok) {
+          alert('Ошибка входа. Проверьте данные.');
+          return;
+        }
+
+        const data = await res.json();
+        console.log('Успешный вход:', data);
+
+        if (data.token) sessionStorage.setItem('token', data.token);
+        if (data.email) sessionStorage.setItem('userEmail', data.email);
+
+        // Переход на главную страницу
+        window.location.href = '/index.html';
+      } catch (err) {
+        console.error('Ошибка запроса:', err);
+        alert('Не удалось соединиться с сервером.');
+      }
+    });
+
+    // Переключатель видимости пароля
+    const togglePassword = document.getElementById('togglePassword');
+    if (togglePassword) {
+      togglePassword.addEventListener('click', () => {
+        const passwordInput = document.getElementById('password');
+        if (!passwordInput) return;
+
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          togglePassword.textContent = '🙈';
+          togglePassword.setAttribute('aria-label', 'Скрыть пароль');
+        } else {
+          passwordInput.type = 'password';
+          togglePassword.textContent = '👁️';
+          togglePassword.setAttribute('aria-label', 'Показать пароль');
+        }
       });
-
-      // Добавляем элементы в контейнер
-      container.appendChild(profile);
-      container.appendChild(logout);
-
-    } else {
-      // ========================
-      // ПОЛЬЗОВАТЕЛЬ НЕ АВТОРИЗОВАН
-      // ========================
-
-      // Создаём ссылку "Вход"
-      const login = document.createElement('a');
-      login.href = authHref();
-      login.textContent = 'Вход';
-
-      // Создаём ссылку "Регистрация"
-      const reg = document.createElement('a');
-      reg.href = regHref();
-      reg.textContent = 'Регистрация';
-
-      // Добавляем ссылки в контейнер
-      container.appendChild(login);
-      container.appendChild(reg);
     }
   }
 
   // ============================================================
   // ИНИЦИАЛИЗАЦИЯ
   // ============================================================
-  // Вызываем функцию когда страница полностью загружена
+  function init() {
+    setupAuthLinks();   // Всегда: обновление меню авторизации
+    initLoginForm();    // Только если есть форма входа
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupAuthLinks);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    setupAuthLinks();
+    init();
   }
 })();

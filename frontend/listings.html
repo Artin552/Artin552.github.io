@@ -6,6 +6,7 @@
   <title>Категории товаров — СтройМаркет</title>
   <link rel="stylesheet" href="/css/styles.css">
   <script src="/js/listings.js" defer></script>
+  <script src="/js/auth.js" defer></script>
 </head>
 
 <body>
@@ -29,10 +30,13 @@
       </div>
 
       <!-- Кнопки навигации -->
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <a href="/frontend/auth.html" class="btn secondary">Вход</a>
-        <a href="/frontend/add.html" class="btn">Добавить</a>
-      </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+      <!-- Контейнер для динамических кнопок аутентификации -->
+        <div class="auth-links"></div>
+      
+      <!-- Кнопка "Добавить" остаётся всегда -->
+      <a href="/frontend/add.html" class="btn">Добавить</a>
+    </div>
     </div>
   </header>
 

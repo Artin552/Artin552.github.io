@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Вход / Регистрация — СтройМаркет</title>
   <link rel="stylesheet" href="/css/styles.css">
-  <script src="/js/auth.js"></script>
+  <script src="/js/auth.js" defer></script>
 </head>
 <body>
   <main class="auth-container">
@@ -34,58 +34,6 @@
     </form>
 
   </main>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('loginForm');
-  if (!form) return;
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const email = form.querySelector('#email').value.trim();
-    const password = form.querySelector('#password').value.trim();
-
-    try {
-  const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!res.ok) {
-        alert('Ошибка входа. Проверьте данные.');
-        return;
-      }
-
-      const data = await res.json();
-      console.log('Успешный вход:', data);
-
-  // Сохраняем токен и email (если есть) в sessionStorage
-  if (data.token) sessionStorage.setItem('token', data.token);
-  if (data.email) sessionStorage.setItem('userEmail', data.email);
-
-  // Переход на главную (index.html в корне проекта)
-  window.location.href = '/index.html';
-    } catch (err) {
-      console.error('Ошибка запроса:', err);
-      alert('Не удалось соединиться с сервером.');
-    }
-  });
-});
-  // toggle show/hide password
-  const togglePassword = document.getElementById('togglePassword');
-  if(togglePassword){
-    togglePassword.addEventListener('click', ()=>{
-      const p = document.getElementById('password');
-      if(!p) return;
-      if(p.type === 'password'){ p.type = 'text'; togglePassword.textContent = '🙈'; togglePassword.setAttribute('aria-label','Скрыть пароль'); }
-      else { p.type = 'password'; togglePassword.textContent = '👁️'; togglePassword.setAttribute('aria-label','Показать пароль'); }
-    });
-  }
-</script>
- 
 
 
 </body>
