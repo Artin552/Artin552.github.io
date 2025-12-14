@@ -418,10 +418,10 @@ a:hover{ color:var(--accent) }
   overflow:hidden;
   box-shadow:var(--shadow);
   display:flex;
-  gap:12px;
+  gap:20px;
 }
 /* Card preview: image or video on the left, metadata on the right */
-.card .preview{ position:relative; width:160px; min-width:160px; height:120px; overflow:hidden; flex-shrink:0 }
+.card .preview{ position:relative; width:180px; min-width:180px; height:135px; overflow:hidden; flex-shrink:0 }
 .card .preview .thumb, .card .preview .preview-video{ width:100%; height:100%; object-fit:cover; display:block }
 .card .preview .discount{ position:absolute; left:8px; top:8px; background: linear-gradient(90deg, rgba(255,107,107,0.12), rgba(255,107,107,0.04)); color:var(--anim); padding:6px 8px; border-radius:8px; font-weight:700; font-size:13px }
 .card .preview .hot-badge{ position:absolute; right:8px; top:8px; background: linear-gradient(90deg, rgba(255,107,107,0.14), rgba(255,107,107,0.04)); color:var(--anim); padding:6px 8px; border-radius:6px; font-weight:700; font-size:12px }
@@ -430,9 +430,17 @@ a:hover{ color:var(--accent) }
 .card{ transition: transform .22s ease, box-shadow .22s ease; transform-origin: center; }
 .card:hover{ transform: translateY(-6px); box-shadow:0 20px 40px rgba(12,18,30,0.12); /* remove strong rotateY for accessibility */ }
 
-.card .meta{ padding:12px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px }
-.card .rating{ color: #f59e0b; font-weight:600; margin-top:6px }
-.card .stock{ color:var(--muted); font-weight:600; font-size:13px }
+/* Удалено дублирующееся правило .card .meta */
+/* Содержание карточки — ЕДИНСТВЕННОЕ корректное определение */
+.card .meta{
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:6px;
+}
+.card .title{ font-weight:600; color:var(--primary) }
+.card .price{ color:var(--accent); font-weight:700 }
 
 /* Open button: jump animation on hover */
 .open-btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; background: linear-gradient(90deg,var(--gradient-start),var(--gradient-end)); color:white; text-decoration:none; transition: transform .18s ease }
@@ -464,16 +472,6 @@ a:hover{ color:var(--accent) }
   flex-shrink:0;
   object-fit:cover;
 }
-/* содержание карточки */
-.card .meta{
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  gap:6px;
-}
-.card .title{ font-weight:600; color:var(--primary) }
-.card .price{ color:var(--accent); font-weight:700 }
 
 /* -------------------------------------------------------------------------- */
 /* Кнопки: основные (primary) и вторичные (secondary) варианты                 */
@@ -537,6 +535,12 @@ textarea{ min-height:120px; resize:vertical }
   .header .inner{ gap:20px }
 }
 
+/* ДОБАВЛЕНО: минимальная ширина карточек на средних экранах */
+@media(min-width: 600px) {
+  .card {
+    min-width: 420px;
+  }
+}
 
 /* -------------------------------------------------------------------------- */
 /* Страницы авторизации: стили для логина/регистрации/восстановления пароля     */
@@ -679,100 +683,7 @@ textarea{ min-height:120px; resize:vertical }
   width: calc(var(--size) * 3);
   position: relative;
   transform-style: preserve-3d;
-
-/* -------------------------------------------------------------------------- */
-/* ---------------- Single listing detail styles --------------------------- */
-/* -------------------------------------------------------------------------- */
-.card.full {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 18px;
-  padding: 0;
 }
-
-.card.full .thumb{
-  width:100%;
-  height: auto;
-  max-height: 520px;
-  object-fit:cover;
-}
-
-.card.full .meta{
-  padding:24px;
-}
-
-.card.full .title{
-  font-size:28px;
-  margin:0 0 8px 0;
-}
-
-.card.full .muted.small{ color:var(--muted); font-size:14px }
-
-.card.full p{ margin:12px 0; color:var(--text); line-height:1.6 }
-
-.card.full .price{
-  font-size:22px;
-  color:var(--accent);
-  background: rgba(14,165,164,0.06);
-  padding:8px 12px;
-  border-radius:8px;
-  display:inline-block;
-}
-
-.card.full .meta .btn.secondary{ margin-top:10px }
-
-@media(min-width:900px){
-  .card.full{ display:flex; flex-direction:row; }
-  .card.full .thumb{ width:50%; max-height:640px }
-  .card.full .meta{ width:50%; }
-}
-
-/* Детальная страница объявления */
-.listing-detail{ max-width:900px; margin:40px auto; padding:0 16px; }
-.listing-header{ text-align:center; margin-bottom:18px }
-.listing-title{ font-size:20px; font-weight:700; color:var(--primary); }
-.listing-date{ margin-top:6px; color:var(--muted); font-size:13px }
-
-.listing-image-wrapper{ display:flex; justify-content:center; margin:18px 0; }
-.listing-image{ width:100%; max-width:860px; height:420px; object-fit:cover; border-radius:12px; box-shadow:var(--shadow); background:var(--bg) }
-
-.listing-body{ max-width:760px; margin:28px auto; color:var(--text); line-height:1.7 }
-.listing-desc{ font-size:15px; margin-bottom:10px }
-.listing-meta{ font-size:13px; color:var(--muted) }
-
-.listing-cta{ text-align:center; margin-top:44px; padding:40px 20px; background:linear-gradient(180deg, rgba(14,165,164,0.04), rgba(14,165,164,0.02)); border-radius:12px }
-.listing-cta h3{ margin:0 0 8px 0; font-size:18px }
-.listing-cta p{ margin:0; color:var(--muted) }
-
-@media(min-width:900px){
-  .listing-image{ height:520px }
-  .listing-title{ font-size:24px }
-}
-
-.-----------------HERO-CLEANUP-DO-NOT-REMOVE
-/* ---------------- Hero video banner ---------------- */
-.hero{ position:relative; height: clamp(340px, 50vh, 520px); display:flex; align-items:center; justify-content:center; overflow:hidden }
-.hero video{ position:absolute; top:50%; left:50%; width:100%; height:100%; transform:translate(-50%,-50%); object-fit:cover; opacity:0.75; }
-.hero .overlay{ position:absolute; inset:0; background: linear-gradient(to bottom, rgba(10,20,30,0.30), rgba(10,20,30,0.45)); }
-.hero-content{ position:relative; z-index:3; color:white; text-align:center; padding:24px; max-width:1100px }
-.hero h1{ font-size:34px; margin:0 0 8px; font-weight:800 }
-.hero-sub{ margin:0 0 8px; font-size:18px }
-.hero-stats{ margin:12px 0; color:rgba(255,255,255,0.9) }
-.hero-search{ margin-top:18px; display:flex; gap:10px; justify-content:center; align-items:center }
-.hero-search select, .hero-search input{ padding:10px 12px; border-radius:8px; border:0; min-width:200px }
-.hero-search button{ padding:10px 16px; border-radius:8px; background:linear-gradient(90deg,var(--gradient-start),var(--gradient-end)); color:white; border:0 }
-
-/* mobile fallback: hide video, show static image and watch button */
-@media(max-width:760px){
-  .hero video{ display:none }
-  .hero{ background:url('../img/hero-mobile.jpg') center/cover no-repeat }
-  #watchVideoBtn{ display:inline-block }
-}
-
-/* Slide-in animation for cards when search invoked */
-.card{ opacity:1; transform:none; transition: transform .45s ease, opacity .45s ease }
-.card.slide-in{ opacity:0; transform: translateY(30px) }
-.card.animate-in{ opacity:1; transform: translateY(0); }
 
 .boxes .box {
   width: var(--size);
@@ -849,63 +760,6 @@ textarea{ min-height:120px; resize:vertical }
   .brand{ font-size:20px }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Premium visual polish - add last so it overrides defaults and is low-risk */
-/* -------------------------------------------------------------------------- */
-:root{
-  --glass: rgba(255,255,255,0.72);
-  --elev: 0 18px 50px rgba(12,18,30,0.12);
-  --soft-elev: 0 10px 30px rgba(12,18,30,0.08);
-}
-
-/* Header: more elegant glass, subtle border and smooth blur */
-.main-header{
-  background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.78));
-  box-shadow: 0 6px 26px rgba(12,18,30,0.06);
-  border-bottom: 1px solid rgba(16,24,40,0.04);
-  backdrop-filter: blur(6px) saturate(110%);
-}
-.top_header{
-  top: 12px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.92), rgba(255,255,255,0.98));
-  box-shadow: 0 10px 40px rgba(12,18,30,0.06);
-  border: 1px solid rgba(16,24,40,0.04);
-}
-
-/* Hero: richer overlay, vignette, and softer content backdrop */
-.hero .overlay{
-  background: linear-gradient(180deg, rgba(10,20,30,0.36), rgba(16,24,40,0.42));
-}
-.hero::after{
-  /* subtle vignette to focus center */
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(60% 50% at 50% 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.08) 40%, rgba(0,0,0,0.28) 100%);
-  z-index:2; mix-blend-mode: multiply;
-}
-.hero .hero-content{
-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-  padding: 28px;
-  border-radius: 14px;
-  box-shadow: var(--soft-elev);
-  backdrop-filter: blur(6px) saturate(120%);
-}
-.hero h1{ letter-spacing: -.6px; font-weight:900; font-size: clamp(28px, 5.2vw, 56px); text-shadow: 0 10px 30px rgba(206, 215, 255, 0.582) }
-.hero .hero-sub{ color: rgba(255,255,255,0.92); font-weight:600 }
-
-/* Hero CTA styling */
-.hero-search button, .open-btn, .btn.primary{
-  border-radius: 12px;
-  padding: 12px 18px;
-  font-weight:800;
-  letter-spacing: .4px;
-  box-shadow: 0 12px 30px rgba(110,68,255,0.12), 0 2px 6px rgba(0,0,0,0.08);
-  transition: transform .22s cubic-bezier(.2,.9,.28,1), box-shadow .22s ease;
-}
-.hero-search button:hover, .open-btn:hover, .btn.primary:hover{ transform: translateY(-4px) scale(1.01); box-shadow: 0 26px 70px rgba(255, 255, 255, 0.14) }
-
 /* Cards: elevate and refine image treatment */
 .card{
   border-radius: 16px;
@@ -945,5 +799,3 @@ p{ color:rgba(30,41,59,0.92); line-height:1.7 }
 
 /* Accessibility: improved focus outlines for keyboard users */
 :focus{ outline: 3px solid rgba(0,196,180,0.12); outline-offset:3px }
-
-

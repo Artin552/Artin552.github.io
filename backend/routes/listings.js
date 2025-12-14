@@ -80,7 +80,7 @@ router.get('/', (req, res) => {
       if (err) return res.status(500).json({ error: 'DB error' });
       // map rows so imagePath becomes a safe public URL when present
       const mapped = (rows || []).map(r => {
-        return Object.assign({}, r, { imagePath: r.imagePath ? ('/uploads/' + r.imagePath) : '' });
+        return Object.assign({}, r, { imagePath: r.imagePath ? ('/uploads' + r.imagePath) : '' });
       });
       res.set('X-Total-Count', total);
       res.json(mapped);
@@ -94,7 +94,7 @@ router.get('/:id', (req, res) => {
   db.get('SELECT id, title, category, price, description, imagePath, created_at, owner_id FROM listings WHERE id = ?', [id], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     if (!row) return res.status(404).json({ error: 'Not found' });
-    const mapped = Object.assign({}, row, { imagePath: row.imagePath ? ('/uploads/' + row.imagePath) : '' });
+    const mapped = Object.assign({}, row, { imagePath: row.imagePath ? ('/uploads' + row.imagePath) : '' });
     res.json(mapped);
   });
 });
@@ -145,7 +145,7 @@ router.post('/', async (req, res) => {
   db.get('SELECT id, title, category, price, description, imagePath, created_at, owner_id FROM listings WHERE id = ?', [id], (err2, row) => {
         if (err2) return res.status(500).json({ error: 'DB error' });
         // expose imagePath as /uploads/<filename>
-        const mapped = Object.assign({}, row, { imagePath: row.imagePath ? ('/uploads/' + row.imagePath) : '' });
+        const mapped = Object.assign({}, row, { imagePath: row.imagePath ? ('/uploads' + row.imagePath) : '' });
         res.status(201).json(mapped);
       });
     }
