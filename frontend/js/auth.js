@@ -40,7 +40,7 @@
 
     container.innerHTML = '';
 
-  if (token && email) {
+  if (token) {
   // ========================
   // ПОЛЬЗОВАТЕЛЬ АВТОРИЗОВАН → ПОКАЗЫВАЕМ ТОЛЬКО КНОПКУ "ПРОФИЛЬ"
   // ========================
@@ -107,7 +107,7 @@
         console.log('Успешный вход:', data);
 
         if (data.token) sessionStorage.setItem('token', data.token);
-        if (data.email) sessionStorage.setItem('userEmail', data.email);
+        if (data.user?.email) sessionStorage.setItem('userEmail', data.user.email);
 
         // Переход на главную страницу
         window.location.href = '/index.html';

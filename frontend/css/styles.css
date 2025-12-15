@@ -343,7 +343,7 @@ a:hover{ color:var(--accent) }
 .category:hover{ transform:translateY(-4px); transition:all .18s }
 
 /* Ensure categories are visible by default (override accidental hide rules) */
-.category{ opacity:1 !important; display:inline-block !important; }
+.category{ opacity:1 ; display:inline-block !important; }
 
 /* Category tiles (grid of selectable tiles) */
 .categories-section{ display:flex; flex-direction:column; align-items:center; padding:24px 0; width:100% }
@@ -798,4 +798,24 @@ p{ color:rgba(30,41,59,0.92); line-height:1.7 }
 }
 
 /* Accessibility: improved focus outlines for keyboard users */
-:focus{ outline: 3px solid rgba(0,196,180,0.12); outline-offset:3px }
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 3px solid rgba(0,196,180,0.12);
+  outline-offset: 3px;
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Профиль и аватар: компоненты личного кабинета                              */
+/* -------------------------------------------------------------------------- */
+.profile-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}

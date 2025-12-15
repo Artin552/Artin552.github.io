@@ -2,6 +2,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
+
 // база хранится рядом, в файле users.db
 const db = new sqlite3.Database(path.join(__dirname, 'users.db'));
 
@@ -25,7 +26,6 @@ db.serialize(() => {
       price TEXT,
       description TEXT,
       imagePath TEXT,
-      imageBase64 TEXT,
       created_at INTEGER
     )
   `);
@@ -35,7 +35,7 @@ db.serialize(() => {
     if (err) return console.error('DB pragma error', err);
     const names = (cols || []).map(c => c.name);
     const adds = [];
-    if (!names.includes('owner_id')) adds.push("ALTER TABLE listings ADD COLUMN owner_id INTEGER");
+    if (!names.includes('owner_id')) adds.push("ALTER TABLE listings ADD COLUMN owner_id INTEGER DEFAULT NULLidx_listings_category");
     if (!names.includes('discount')) adds.push("ALTER TABLE listings ADD COLUMN discount INTEGER DEFAULT 0");
     if (!names.includes('rating')) adds.push("ALTER TABLE listings ADD COLUMN rating REAL DEFAULT 0");
     if (!names.includes('reviewsCount')) adds.push("ALTER TABLE listings ADD COLUMN reviewsCount INTEGER DEFAULT 0");
@@ -48,10 +48,13 @@ db.serialize(() => {
 
     // create index on category for faster filtering (no-op if exists)
     db.run("CREATE INDEX IF NOT EXISTS idx_listings_category ON listings(category)", (e) => { if (e) console.error('Index create error', e); });
+
+    db.run("CREATE INDEX IF NOT EXISTS idx_listings_owner ON listings(owner_id)", (e) => { if (e) console.error('Index owner error', e); });
   });
 
-  // Безопасная миграция: добавим owner_id, если его нет
-  // Ensure users table has reset_token/reset_requested_at for password reset flow
+
+// Миграция таблицы users: добавляем поля для восстановления пароля и профиля  
+// Ensure users table has reset_token/reset_requested_at for password reset flow
   db.all("PRAGMA table_info('users')", (err2, ucols) => {
     if (err2) return console.error('DB pragma error (users)', err2);
     const unames = (ucols || []).map(c => c.name);
@@ -61,7 +64,18 @@ db.serialize(() => {
     if (!unames.includes('reset_requested_at')) {
       db.run("ALTER TABLE users ADD COLUMN reset_requested_at INTEGER", (e) => { if (e) console.error('Could not add reset_requested_at', e); else console.log('Added reset_requested_at to users'); });
     }
+    if (!unames.includes('created_at')) {
+      db.run("ALTER TABLE users ADD COLUMN created_at INTEGER", (e) => {
+        if (e) console.error('Could not add created_at', e);
+        else console.log('Added created_at to users');
+      });
+    }
+    if (!unames.includes('avatar_path')) {
+      db.run("ALTER TABLE users ADD COLUMN avatar_path TEXT", (e) => {
+      if (e) console.error('Could not add avatar_path', e);
+      else console.log('Added avatar_path to users');
+      });
+    }
   });
 });
-
 module.exports = db;

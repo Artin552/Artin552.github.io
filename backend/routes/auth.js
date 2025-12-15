@@ -4,14 +4,35 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key'; // в реале — хранить в .env
+// ⚠️ В продакшене JWT_SECRET должен быть в .env (минимум 32 символа)
+
 // Email transporter will be created lazily if env vars present
 const EMAIL_HOST = process.env.EMAIL_HOST || null;
 const EMAIL_PORT = process.env.EMAIL_PORT || null;
 const EMAIL_USER = process.env.EMAIL_USER || null;
 const EMAIL_PASS = process.env.EMAIL_PASS || null;
+
+
+// Вспомогательная функция для извлечения пользователя из токена
+function getUserFromAuthHeader(req) {
+  const auth = req.headers.authorization;
+  if (!auth) return null;
+  const parts = auth.split(' ');
+  if (parts.length !== 2) return null;
+  const token = parts[1];
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (e) {
+    return null;
+  }
+}
+
+
 
 let transporter = null;
 if (EMAIL_HOST && EMAIL_PORT && EMAIL_USER && EMAIL_PASS) {
@@ -21,6 +42,13 @@ if (EMAIL_HOST && EMAIL_PORT && EMAIL_USER && EMAIL_PASS) {
 // === Регистрация ===
 router.post('/register', (req, res) => {
   const { name, email, password } = req.body;
+
+  // Валидация email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Некорректный email' });
+  }
+
   if (!email || !password) return res.status(400).json({ error: 'Email и пароль обязательны' });
 
   // проверим, нет ли уже такого email
@@ -28,15 +56,14 @@ router.post('/register', (req, res) => {
     if (row) return res.status(400).json({ error: 'Пользователь уже существует' });
 
     const hash = await bcrypt.hash(password, 10);
+    const now = Date.now();
     db.run(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-      [name || '', email, hash],
-      function (err) {
-        if (err) return res.status(500).json({ error: 'Ошибка при регистрации' });
-        const user = { id: this.lastID, name, email };
+      'INSERT INTO users (name, email, password, created_at) VALUES (?, ?, ?, ?)', [name || '', email, hash, now], function (err) {
+      if (err) return res.status(500).json({ error: 'Ошибка при регистрации' });
+      const user = { id: this.lastID, name, email };
         const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
         // Return token so client can stay logged in; redirect to root
-        res.json({ success: true, user, token, email: user.email, redirect: '/' });
+        res.json({ success: true, user, token });
       }
     );
   });
@@ -54,11 +81,11 @@ router.post('/login', (req, res) => {
 
     const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ success: true, email: user.email, token, redirect: '/frontend/index.html' });
+    res.json({ success: true, user, token });
   });
 });
 
-// === Забыли пароль: генерируем код и отправляем в Telegram (если настроен)
+// === Забыли пароль:
 router.post('/forgot', (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: 'Email обязателен' });
@@ -129,4 +156,70 @@ router.post('/reset', async (req, res) => {
   });
 });
 
-module.exports = router;
+// Загрузить аватар (только для авторизованного пользователя)
+router.post('/avatar', async (req, res) => {
+  const user = getUserFromAuthHeader(req);
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  const { imageBase64 } = req.body;
+  if (!imageBase64.startsWith('data:image')) {
+    return res.status(400).json({ error: 'Invalid image' });
+  }
+
+  try {
+    const parts = imageBase64.split(',');
+    const buffer = Buffer.from(parts[1], 'base64');
+    const MAX_BYTES = 2 * 1024 * 1024; // 2 МБ
+    if (buffer.length > MAX_BYTES) throw new Error('Слишком большой файл');
+
+    const fileType = require('file-type');
+    const ft = await fileType.fromBuffer(buffer);
+    if (!ft || !ft.mime.startsWith('image/')) throw new Error('Только изображения');
+
+    const allowed = ['jpg', 'jpeg', 'png', 'webp'];
+    const ext = ft.ext && allowed.includes(ft.ext) ? ft.ext : 'jpg';
+
+    const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'avatars');
+    fs.mkdirSync(uploadDir, { recursive: true });
+
+    const filename = `avatar_${user.id}.${ext}`;
+    const savePath = path.join(uploadDir, filename);
+    fs.writeFileSync(savePath, buffer);
+
+    // Сохраняем путь в БД
+    const avatarPath = `avatars/${filename}`;
+    db.run('UPDATE users SET avatar_path = ? WHERE id = ?', [avatarPath, user.id], (err) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      res.json({ avatarPath: '/uploads/' + avatarPath });
+    });
+  } catch (err) {
+    console.error('Avatar upload error:', err);
+    res.status(400).json({ error: 'Ошибка загрузки аватара' });
+  }
+});
+
+
+// Получить данные текущего пользователя
+router.get('/me', (req, res) => {
+  const user = getUserFromAuthHeader(req);
+  if (!user || !user.id) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  db.get('SELECT name, email, created_at, avatar_path  FROM users WHERE id = ?', [user.id], (err, row) => {
+    if (err) {
+      console.error('DB error in /me:', err);
+      return res.status(500).json({ error: 'DB error' });
+    }
+    if (!row) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(row);
+  });
+});
+
+
+module.exports = {
+  router,
+  getUserFromAuthHeader
+};

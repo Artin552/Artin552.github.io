@@ -96,7 +96,8 @@ app.use((err, req, res, next) => {
 // ПОДКЛЮЧЕНИЕ API МАРШРУТОВ
 // ============================================================
 // Все маршруты аутентификации начинаются с /api/auth
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes.router);
+
 
 // Все маршруты объявлений начинаются с /api/listings
 app.use('/api/listings', listingsRoutes);
@@ -123,35 +124,38 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
     }
   }
 }));
+// ============================================================
+// СПЕЦИАЛЬНЫЕ МАРШРУТЫ ДЛЯ HTML СТРАНИЦ
+// ============================================================
+
+
+// Раздаём HTML файл при запросе http://localhost:4000/my-listings
+app.get('/my-listings', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'my-listings.html'));
+});
+
+
+// Защита от утечки базы данных
+app.use((req, res, next) => {
+  if (req.url.includes('.db')) {
+    return res.status(403).send('Forbidden');
+  }
+  next();
+});
+
 
 // Раздаём все остальные файлы из папки frontend (HTML файлы и т.д.)
 // ВАЖНО: это НЕ раздаёт репозиторий корень (.env, server.js, *.db)
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-// ============================================================
-// СПЕЦИАЛЬНЫЕ МАРШРУТЫ ДЛЯ HTML СТРАНИЦ
-// ============================================================
-// Генерируем маршруты для всех HTML файлов в папке frontend
-// Это позволяет открывать их по двум адресам:
-// /listings.html и /frontend/listings.html
-const frontendHtmlFiles = ['listings.html', 'add.html', 'auth.html', 'dashboard.html', 'reg.html', 'reset.html', 'forgot.html', 'product.html'];
-frontendHtmlFiles.forEach(file => {
-  // Первый маршрут: /frontend/filename.html
-  app.get(`/frontend/${file}`, (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', file));
-  });
-  // Второй маршрут: /filename.html (для удобства)
-  app.get(`/${file}`, (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', file));
-  });
-});
+
 
 // ============================================================
 // ГЛАВНАЯ СТРАНИЦА
 // ============================================================
 // Все остальные GET запросы идут на главную страницу (index.html в корне)
 // Главная страница — доступна по / и /index.html
-app.get(['/', '/index.html'], (req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 // ============================================================

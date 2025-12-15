@@ -1,21 +1,61 @@
 <!doctype html>
 <html lang="ru">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Личный кабинет</title><link 
-  rel="stylesheet"
-  href="/css/styles.css">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Личный кабинет</title>
+  <link rel="stylesheet" href="/css/styles.css">
   <script src="/js/auth.js" defer></script>
-   <script src="/js/dashboard.js"  defer></script>
+  <script src="/js/profile.js" defer></script>
 </head>
 <body>
-  <main class="container" style="padding-top:40px">
-    <h2>Мои объявления</h2>
-    <div id="myListings" class="grid">
-      <!-- JS загрузит объявления текущего пользователя -->
+  <!-- Хедер (как на других страницах) -->
+  <header class="main-header">
+    <div class="header-inner container">
+      <div class="logo-wrap">
+        <a class="brand" href="/">BuildStore</a>
+      </div>
+      <!-- Можно добавить аватар или меню позже -->
     </div>
-      <div style="margin-top:12px">
-      <a href="/frontend/add.html" class="btn">Добавить объявление</a>
-    </div>
-  </main>
+  </header>
 
+  <main class="container" style="padding-top: 40px;">
+    <h1 style="font-size: 28px; text-align: center; margin-bottom: 24px; color: var(--primary);">Личный кабинет</h1>
+
+    <article class="profile-card" style="padding: 28px; max-width: 520px; margin: 0 auto;">
+     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+      <div class="profile-avatar">
+        <img src="/img/default-avatar.svg" alt="Аватар">
+      </div>
+        <h2 id="userName" style="margin: 16px 0 8px; font-size: 22px; color: var(--primary);">Загрузка...</h2>
+        <p id="userEmail" class="muted" style="font-size: 15px;">—</p>
+        <p id="userSince" class="muted small">—</p>
+    </div>
+
+      <div style="margin-top:16px">
+        <label class="btn secondary" style="cursor:pointer; justify-content:center; padding:8px 12px;">
+          📷 Загрузить аватар
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" />
+        </label>
+        <p id="avatarStatus" style="font-size:12px; color:var(--muted); margin-top:6px;"></p>
+      </div>
+
+      <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 12px;">
+        <a href="/my-listings.html" class="btn primary" style="justify-content: center;">Мои объявления</a>
+        <button class="btn secondary" style="justify-content: center;">Редактировать профиль</button>
+        <button class="btn secondary" style="justify-content: center;">Сменить пароль</button>
+        <button id="logoutBtn" class="btn secondary danger" style="justify-content: center;">Выйти</button>
+      </div>
+      <div style="margin-top: 12px;">
+        <a href="/" class="btn secondary" style="justify-content: center; width: 100%;">
+          На главную
+        </a>
+      </div>
+
+      <p style="margin-top: 24px; font-size: 13px; color: var(--muted); text-align: center;">
+        Ваши данные защищены. Пароль хранится в зашифрованном виде.
+      </p>
+    </article>
+  </main>
 </body>
 </html>
