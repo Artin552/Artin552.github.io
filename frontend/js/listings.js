@@ -140,7 +140,7 @@ function displayCategories(categories) {
 
     // Изображение категории
     const imageUrl = category.firstProduct?.imagePath || 
-                    `https://picsum.photos/seed/${encodeURIComponent(category.name)}/300/200`;
+                    `https://picsum.photos/seed/  ${encodeURIComponent(category.name)}/300/200`;
     
     const image = document.createElement('img');
     image.src = imageUrl;
@@ -344,7 +344,7 @@ function displayProductsOnPage(products) {
 
     // Изображение товара
     const imageUrl = product.imagePath || 
-                    `https://picsum.photos/seed/${encodeURIComponent(product.title)}/400/300`;
+                    `https://picsum.photos/seed/  ${encodeURIComponent(product.title)}/400/300`;
     
     const image = document.createElement('img');
     image.src = imageUrl;
@@ -531,21 +531,6 @@ document.getElementById('clearFiltersBtn').addEventListener('click', () => {
   }
 });
 
-// Кнопка поиска
-document.getElementById('searchBtn').addEventListener('click', () => {
-  const searchQuery = document.getElementById('searchInput').value.trim();
-  if (searchQuery) {
-    // Перенаправляем на главную страницу с поиском
-    window.location.href = `/?q=${encodeURIComponent(searchQuery)}`;
-  }
-});
-
-// Поиск по нажатию Enter в поле ввода
-document.getElementById('searchInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    document.getElementById('searchBtn').click();
-  }
-});
 
 // Применять фильтры при изменении чекбоксов (автоматически)
 document.getElementById('fInStock').addEventListener('change', () => {
@@ -573,28 +558,50 @@ document.getElementById('fMaxPrice').addEventListener('change', () => {
  * при загрузке страницы
  */
 async function initPage() {
-  console.log('🚀 Инициализация страницы категорий...');
-  console.log('📋 Контейнер категорий:', document.getElementById('categoryGrid'));
-  
-  try {
-    // Загружаем все товары с сервера
-    console.log('📡 Начинаю загрузку товаров...');
-    await fetchAllListings();
-    console.log('✅ Товары загружены, всего:', allListings.length);
-    
-    // Получаем уникальные категории
+  console.log('🚀 Инициализация страницы...');
+
+  // 🔍 Шаг 1: проверяем, есть ли поисковый запрос в URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchQuery = urlParams.get('q'); // например: "молоток"
+
+  // 📥 Шаг 2: загружаем все объявления
+  await fetchAllListings();
+
+  // 🔍 Шаг 3: если есть запрос — показываем поиск
+  if (searchQuery) {
+    showSearchResults(searchQuery);
+  } 
+  // 🗂️ Шаг 4: если нет — показываем категории
+  else {
     const categories = getCategories(allListings);
-    console.log('📦 Найдено категорий:', categories.length);
-    console.log('📋 Категории:', categories);
-    
-    // Отображаем категории
-    console.log('🎨 Отображаю категории на странице...');
     displayCategories(categories);
-    
-    console.log(`✅ Готово! Найдено ${categories.length} категорий`);
-  } catch (error) {
-    console.error('❌ Ошибка инициализации:', error);
   }
+}
+
+function showSearchResults(query) {
+  // Фильтруем все товары по запросу (в названии, описании, категории)
+  const filtered = allListings.filter(item =>
+    (item.title || '').toLowerCase().includes(query.toLowerCase()) ||
+    (item.description || '').toLowerCase().includes(query.toLowerCase()) ||
+    (item.category || '').toLowerCase().includes(query.toLowerCase())
+  );
+
+  // Скрываем категории
+  document.getElementById('categoriesSection').style.display = 'none';
+
+  // Показываем товары
+  document.getElementById('productsSection').style.display = 'block';
+  document.getElementById('categoryTitle').textContent = `Результаты поиска: "${query}"`;
+  document.getElementById('backBtn').textContent = '← Вернуться к категориям';
+
+  // Отключаем фильтры (или оставь, если хочешь)
+  document.getElementById('filtersPanel').style.display = 'none';
+
+  // Показываем товары (без пагинации, или с ней)
+  displayProductsOnPage(filtered); // ← используем уже существующую функцию
+
+  // Скрываем пагинацию, если не нужно
+  // document.getElementById('paginationContainer').style.display = 'none';
 }
 
 // Запускаем инициализацию при загрузке страницы

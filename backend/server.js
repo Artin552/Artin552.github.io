@@ -130,11 +130,13 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
 
 
 // Раздаём HTML файл при запросе http://localhost:4000/my-listings
-app.get('/my-listings', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'frontend', 'my-listings.html'));
-});
+  app.get('/my-listings', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'my-listings.html'));
+  });
 
-
+  app.get('/my-listings.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'my-listings.html'));
+  });
 // Защита от утечки базы данных
 app.use((req, res, next) => {
   if (req.url.includes('.db')) {
@@ -143,10 +145,11 @@ app.use((req, res, next) => {
   next();
 });
 
-
+console.log('Frontend path:', path.join(__dirname, '..', 'frontend'));
+console.log('Root path:', path.join(__dirname, '..'));
 // Раздаём все остальные файлы из папки frontend (HTML файлы и т.д.)
 // ВАЖНО: это НЕ раздаёт репозиторий корень (.env, server.js, *.db)
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
+app.use('/frontend', express.static(path.join(__dirname, '..', 'frontend')));
 
 
 
@@ -155,7 +158,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 // ============================================================
 // Все остальные GET запросы идут на главную страницу (index.html в корне)
 // Главная страница — доступна по / и /index.html
-app.get('*', (req, res) => {
+app.get(['/', '/index.html'], (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 // ============================================================

@@ -1,184 +1,283 @@
-/* styles.css
-   Проект: BuildStoreNET — Глобальные стили
-   Назначение: общие стили фронтенда (подход mobile-first)
-   Структура: переменные -> хедер -> герой -> компоненты (поиск, навигация, карточки) -> страницы -> утилиты
-   ПРИМЕЧАНИЕ: в этом файле только презентационные стили (CSS). Комментарии помогают ориентироваться.
-*/
+/* ================================================================= */
+/* BUILDSTORENET — ГЛОБАЛЬНЫЙ ФАЙЛ СТИЛЕЙ                            */
+/* Mobile-first, семантичный, доступный, готовый к продакшену        */
+/* ================================================================= */
 
 /* -------------------------------------------------------------------------- */
-/*  Короткое содержание (TOC)
-  1) Переменные / Тема
-  2) Хедер (логотип, навигация, действия)
-  3) Герой (видео-баннер, поиск в герое)
-  4) Компоненты: поиск, категории, карточки, кнопки
-  5) Страницы: список объявлений, детальная
-  6) Формы и страницы авторизации
-  7) Анимация лоадера
-  8) Адаптив и медиазапросы
-*/
-
-/* -------------------------------------------------------------------------- */
-/* ------------------------ 1) Базовые переменные / тема ---------------------- */
+/* 1. ПОДКЛЮЧЕНИЕ ШРИФТОВ И ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ (тема)                    */
 /* -------------------------------------------------------------------------- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Montserrat:wght@700;800;900&display=swap');
 
-:root{
-  /* Palette */
-  --primary: #1A365D;       /* тёмно-синий — для заголовков, кнопок */
-  --accent: #00C4B4;        /* бирюзовый — акценты */
-  --gradient-start: #00C4B4;/* градиент начало (CTA) */
-  --gradient-end: #6E44FF;  /* градиент конец (CTA) */
-  --bg: #F8FAFC;            /* фон */
-  --text: #1E293B;          /* основной текст */
-  --anim: #FF6B6B;          /* анимации/скидки */
+:root {
+  /* Цветовая палитра */
+  --primary: #1A365D;
+  --accent: #00C4B4;
+  --gradient-start: #00C4B4;
+  --gradient-end: #6E44FF;
+  --bg: #F8FAFC;
+  --text: #1E293B;
+  --anim: #FF6B6B;
 
-  /* Layout tokens */
+  /* Параметры макета и интерфейса */
   --card: #ffffff;
   --muted: #6b7280;
-  --shadow: 0 6px 20px rgba(13,18,26,0.08);
+  --shadow: 0 6px 20px rgba(13, 18, 26, 0.08);
   --radius: 12px;
   --max-width: 1100px;
   --container-padding: 16px;
   --gap: 12px;
-  --transition: all .3s ease;
+  --transition: all 0.3s ease;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Хедер: верхняя фиксированная панель, логотип, действия (поиск, профиль, корзина, добавить) */
-/* Содержит: .main-header, .header-inner, .logo-wrap, .main-nav, .header-actions */
+/* 2. СБРОС СТИЛЕЙ И БАЗОВАЯ ТИПОГРАФИКА                                     */
 /* -------------------------------------------------------------------------- */
-.main-header{ background: rgba(255,255,255,0.98); position:sticky; top:0; z-index:50; transition: all .28s ease; }
-.main-header.shrink{ backdrop-filter: blur(4px); background: rgba(26,54,93,0.06); transform: translateY(-2px); padding:6px 0; }
-.header-inner{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; }
-.logo-wrap{ display:flex; align-items:center; gap:12px }
-.brand{ font-family: 'Montserrat', sans-serif; font-weight:800; color:var(--primary); font-size:22px; letter-spacing:1px }
-.hammer{ font-size:18px; opacity:0; transform:translateY(-6px); transition: all .18s ease; cursor:pointer }
-.logo-wrap:hover .hammer{ opacity:1; transform:translateY(0); }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
 
-.main-nav{ display:flex; gap:16px; align-items:center }
-.main-nav a{ color:var(--text); text-decoration:none; padding:8px 6px; border-radius:6px; transition: var(--transition) }
-.main-nav a:hover{ background:linear-gradient(90deg, rgba(0,196,180,0.08), rgba(110,68,255,0.06)); color:var(--accent) }
+body {
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-.header-actions{ display:flex; gap:12px; align-items:center }
-.search-inline{ display:flex; gap:6px; align-items:center; background:var(--card); padding:6px; border-radius:8px; box-shadow:var(--shadow) }
-.search-inline input{ border:0; outline:none; padding:6px; width:220px }
-.search-inline select{ border:0; background:transparent; padding:6px }
-.icon-btn{ border:0; background:transparent; cursor:pointer }
+/* Заголовки */
+h1, h2, h3, h4, h5 {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--primary);
+  margin: 0;
+}
+h1 { font-size: clamp(20px, 4.6vw, 48px); font-weight: 800; }
+h2 { font-size: clamp(18px, 3.2vw, 32px); font-weight: 700; }
 
-.auth-links a{ margin:0 6px; color:var(--muted); text-decoration:none; transition: var(--transition) }
-.auth-links a:hover{ color:var(--accent) }
-
-.cart{ position:relative; cursor:pointer; font-size:18px }
-.cart-badge{ position:absolute; top:-8px; right:-10px; background:var(--anim); color:white; padding:2px 6px; border-radius:999px; font-size:12px; box-shadow:0 4px 10px rgba(0,0,0,0.12) }
-.cart.added{ animation: cart-pop .7s ease; }
-@keyframes cart-pop{ 0%{ transform:scale(1) } 30%{ transform:scale(1.22) } 100%{ transform:scale(1) } }
-
-.btn.add-listing{ background: linear-gradient(90deg,var(--gradient-start),var(--gradient-end)); color:white; padding:8px 14px; border-radius:10px; box-shadow:0 10px 30px rgba(110,68,255,0.12); transition: transform .18s ease }
-.btn.add-listing:hover{ animation: pulse 1s infinite; transform:translateY(-2px) }
-@keyframes pulse{ 0%{ box-shadow:0 8px 20px rgba(0,196,180,0.12) } 50%{ box-shadow:0 16px 40px rgba(110,68,255,0.16) } 100%{ box-shadow:0 8px 20px rgba(0,196,180,0.12) } }
-
-/* Utility transitions and reveal */
-@keyframes sr-reveal{ from{ opacity:0; transform:translateY(10px) } to{ opacity:1; transform:translateY(0) } }
-.reveal{ animation: sr-reveal .6s cubic-bezier(.2,.9,.3,1) both }
-.transition-all{ transition: var(--transition) }
-
-/* responsive adjustments */
-@media(max-width:900px){
-  .main-nav{ display:none }
-  .search-inline input{ width:120px }
+/* Ссылки */
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent);
 }
 
 /* -------------------------------------------------------------------------- */
-/* Сброс и типографика: базовые reset-стили и сглаживание шрифтов               */
+/* 3. ОБЩИЙ МАКЕТ: КОНТЕЙНЕР И ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ                        */
 /* -------------------------------------------------------------------------- */
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background:var(--bg);
-  color:var(--text);
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  line-height:1.45;
-  transition: background .25s ease, color .25s ease;
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
 }
 
-/* Headings use Montserrat for stronger presence */
-h1,h2,h3,h4,h5{ font-family: 'Montserrat', system-ui, sans-serif; color:var(--primary); margin:0 }
-h1{ font-size: clamp(20px, 4.6vw, 48px); font-weight:800 }
-h2{ font-size: clamp(18px, 3.2vw, 32px); font-weight:700 }
-
-a{ color:var(--primary); text-decoration:none }
-a:hover{ color:var(--accent) }
-
-/* Primary CTA button style */
-.btn{ display:inline-flex; align-items:center; gap:8px; border:0; cursor:pointer; padding:10px 14px; border-radius:10px; font-weight:700 }
-.btn.primary{ background: linear-gradient(90deg,var(--gradient-start),var(--gradient-end)); color:white; box-shadow: 0 12px 30px rgba(110,68,255,0.10); transition: transform .22s ease, box-shadow .22s ease }
-.btn.primary:hover{ transform: translateY(-3px); box-shadow: 0 20px 50px rgba(110,68,255,0.14) }
-
-/* Discount and hot badges */
-.discount{ background: linear-gradient(90deg, rgba(255,107,107,0.12), rgba(255,107,107,0.06)); color:var(--anim); padding:6px 8px; border-radius:8px; font-weight:700 }
-.hot-badge{ background: linear-gradient(90deg, rgba(255,107,107,0.15), rgba(255,107,107,0.06)); color:var(--anim); padding:6px 8px; border-radius:8px; font-weight:700 }
-
-/* -------------------------------------------------------------------------- */
-/* Контейнер: центральная колонка, максимальная ширина и горизонтальные отступы */
-/* -------------------------------------------------------------------------- */
-.container{
-  max-width:var(--max-width);
-  margin:0 auto;
-  padding:0 var(--container-padding);
+.container > section {
+  margin-top: 24px;
+  margin-bottom: 24px;
 }
+
 /* -------------------------------------------------------------------------- */
-/* Герой и обёртка хедера: большая визуальная область-баннер (видео размещено в .hero)
-  .header используется для структуры, .hero содержит фон и контент баннера
-*/
+/* 4. ШАПКА САЙТА (верхняя навигационная панель)                             */
 /* -------------------------------------------------------------------------- */
-.header {
-  /* header теперь служит только контейнером для верхней панели; большой фон перенесён в .hero */
+.main-header {
+  background: rgba(255,255,255,0.98);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: all 0.28s ease;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+}
+
+/* Логотип и название */
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  color: var(--primary);
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+.hammer {
+  font-size: 18px;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: all 0.18s ease;
+  cursor: pointer;
+}
+.logo-wrap:hover .hammer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Основная навигация */
+.main-nav {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.main-nav a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 8px 6px;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.main-nav a:hover {
+  background: linear-gradient(90deg, rgba(0,196,180,0.08), rgba(110,68,255,0.06));
+  color: var(--accent);
+}
+
+/* Правая часть шапки (авторизация, корзина, кнопка добавления) */
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.auth-links a {
+  margin: 0 6px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.auth-links a:hover {
+  color: var(--accent);
+}
+
+/* Индикатор корзины */
+.cart {
   position: relative;
+  cursor: pointer;
+  font-size: 18px;
+}
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: var(--anim);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
+/* Кнопка "Добавить объявление" */
+.btn.add-listing {
+  background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+  color: white;
+  padding: 8px 14px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(110,68,255,0.12);
+  transition: transform 0.18s ease;
+}
+.btn.add-listing:hover {
+  animation: pulse 1s infinite;
+  transform: translateY(-2px);
+}
+@keyframes pulse {
+  0% { box-shadow: 0 8px 20px rgba(0,196,180,0.12); }
+  50% { box-shadow: 0 16px 40px rgba(110,68,255,0.16); }
+  100% { box-shadow: 0 8px 20px rgba(60,62,62,0.12); }
+}
+
+/* Поиск в шапке */
+.search-inline {
+  display: flex;
+  align-items: center;
+  background: var(--card);
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  width: 100%;
+}
+
+.search-inline input {
+  border: 0;
+  outline: none;
+  padding: 6px;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+}
+
+.search-inline button {
+  margin-left: 8px;
+  white-space: nowrap;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Герой: видео-баннер (full-bleed), оверлей и контент (заголовок, поиск и т.д.) */
+/* 5. ГЕРОЙ СЕКЦИЯ (видео-баннер с поиском)                                  */
 /* -------------------------------------------------------------------------- */
-.hero{
+.hero {
   position: relative;
   width: 100%;
-  /* slightly reduce hero height so content below is visible sooner */
   height: clamp(340px, 50vh, 520px);
   overflow: hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.hero video{
+.hero video {
   position: absolute;
   left: 50%;
   top: 50%;
   width: 100%;
   height: 100%;
   transform: translate(-50%, -50%);
-  object-fit: cover; /* ключ: покрытие области */
+  object-fit: cover;
   z-index: 0;
 }
-.hero .overlay{
-  position:absolute; inset:0; background: linear-gradient(180deg, rgba(26,54,93,0.28), rgba(110,68,255,0.20)); z-index:1; mix-blend-mode: multiply;
+.hero .overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(26,54,93,0.28), rgba(110,68,255,0.20));
+  z-index: 1;
+  mix-blend-mode: multiply;
 }
-.hero .hero-content{ position:relative; z-index:2; color: #fff; text-align:center; padding: 20px; max-width:980px }
-.hero .hero-sub{ color: rgba(255,255,255,0.95); margin-top:8px; font-size:18px }
-.hero h1{ font-size: clamp(26px, 4.6vw, 44px); line-height:1.05; letter-spacing:-0.4px; text-shadow:0 6px 20px rgba(199, 209, 255, 0.836) }
-.hero-search{ display:inline-flex; gap:8px; margin-top:14px }
+.hero .hero-content {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  max-width: 980px;
+}
+.hero .hero-sub {
+  color: rgba(255,255,255,0.95);
+  margin-top: 8px;
+  font-size: 18px;
+}
+.hero h1 {
+  font-size: clamp(26px, 4.6vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.4px;
+  text-shadow: 0 6px 20px rgba(199, 209, 255, 0.836);
+}
 
-.hero-search{
+/* Поиск в герое */
+/* Десктоп: оставляем как было */
+.hero-search {
+  display: flex;
+  gap: 8px;
+  margin: 14px auto 0;
   background: rgba(255,255,255,0.06);
-  padding:8px;
+  padding: 8px;
   border-radius: 28px;
   box-shadow: 0 8px 30px rgba(3,10,18,0.18);
   backdrop-filter: blur(6px);
-  align-items:center;
-  max-width:760px;
-  width:90%;
+  align-items: center;
+  max-width: 760px;
 }
 .hero-search select, .hero-search input{
   border:0;
@@ -200,604 +299,166 @@ a:hover{ color:var(--accent) }
   background-repeat: no-repeat;
 }
 .hero-search select:focus{ box-shadow:0 8px 30px rgba(0,0,0,0.18) }
-
 /* Make option list readable (best-effort; some browsers ignore option styling) */
 .hero-search select option{
-  background: var(--card); color:var(--text);
-}
-.hero-search input{ flex:1; font-size:16px }
-.hero-search button{ border-radius:18px; padding:10px 14px }
-
-/* Адаптация героя под мобильные: высота, падинг контента и кнопка "Посмотреть видео" */
-@media(max-width:600px){
-  .hero{ height:300px }
-  .search-inline input{ width:120px }
-  .hero .hero-content{ padding:12px }
-  #watchVideoBtn{ display:inline-block }
-}
-
-/* -------------------------------------------------------------------------- */
-/* 3) Анимации: reveal, pulse, bounce, btn-cta                                      */
-/* -------------------------------------------------------------------------- */
-@keyframes btn-bounce{ 0%{ transform:translateY(0) } 40%{ transform:translateY(-6px) } 100%{ transform:translateY(0) } }
-@keyframes soft-pulse{ 0%{ box-shadow:0 6px 18px rgba(0,0,0,0.06) } 50%{ box-shadow:0 18px 40px rgba(0,0,0,0.09) } 100%{ box-shadow:0 6px 18px rgba(0,0,0,0.06) } }
-@keyframes float-up{ from{ transform: translateY(8px); opacity:0 } to{ transform: translateY(0); opacity:1 } }
-
-.animate-cta{ animation: btn-bounce 1.2s ease infinite; }
-.pulse-soft{ animation: soft-pulse 1.6s ease infinite }
-.sr{ opacity:0; transform:translateY(8px); }
-.sr.show{ opacity:1; transform:none; transition: opacity .5s ease, transform .5s ease }
-
-/* small helper to highlight important text */
-.muted-accent{ color:var(--accent) }
-
-/* -------------------------------------------------------------------------- */
-/* Стили верхней панели хедера: декоративная обёртка для визуального слоя      */
-/* -------------------------------------------------------------------------- */
-.top_header {
-  background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.98));
-  padding: 8px 0;
-  box-shadow: var(--shadow);
-  position: sticky;
-  top: 10px;
-  z-index: 120;
-  width: 100%; /* full-width container for consistent alignment */
-  max-width: var(--max-width);
-  margin: 0 auto;
-  border-radius: 10px;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Внутренняя сетка хедера: выравнивание логотипа, навигации и действий        */
-/* -------------------------------------------------------------------------- */
-.header .inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-
-/* -------------------------------------------------------------------------- */
-/* Декоративная большая надпись в хедере (если используется как фон)          */
-/* -------------------------------------------------------------------------- */
-.m_header{
-  position:absolute;
-  left:50%; top:65%; transform:translate(-50%,-50%);
-  margin:0;
-  font-size: clamp(80px, 25vw, 320px);
-  font-weight:900;
-  color: rgba(255,255,255,0.95); /* белый */
-  text-shadow: 0 8px 30px rgba(0,0,0,0.35);
-  z-index:2;
-  pointer-events:none;
-}
-/* -------------------------------------------------------------------------- */
-/* Нижняя часть хедера (блок поиска/подзаголовка) — старый/вспомогательный блок */
-/* -------------------------------------------------------------------------- */
-.under_header {
-  position: absolute;  /* фиксируем внизу header */
-  bottom: 20px;        /* чуть выше низа картинки */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;         /* поверх картинки */
-  width: 85%;
-  max-width: var(--max-width);
-}
-/* -------------------------------------------------------------------------- */
-/* Брендинг сайта: стили логотипа и названия                                  */
-/* -------------------------------------------------------------------------- */
-.text-name{
-  display: flex;
-  position: relative;
-  left: 0%;
-  font-family: 'Rosso One', sans-serif;
-  font-size: 36px;
-  text-transform:  uppercase;
-  background: linear-gradient(90deg, var(--gradient-start), var(--primary));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-} 
-/* -------------------------------------------------------------------------- */
-/* Компоненты поиска (legacy .search-bar и основной .hero-search)
-  .hero-search — главный контрол поиска на главной странице                 */
-/* -------------------------------------------------------------------------- */
-.search-bar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  background: var(--card);
-  padding: 8px;
-  border-radius: 10px;
-  box-shadow: var(--shadow);
-  flex: 1;
-}
-
-.search-bar input {
+  background: var(--card); color:var(--text);}
+.hero-search button {
   border: 0;
   outline: none;
-  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+
+.hero-search input {
   flex: 1;
-  background: transparent;
+  font-size: 16px;
 }
 
-
-/* -------------------------------------------------------------------------- */
-/* Категории: небольшие «таблетки» для быстрого фильтра (пиллы)               */
-/* -------------------------------------------------------------------------- */
-.categories{
-  display:flex;
-  gap:10px;
-  overflow:auto;
-  padding:12px 0;
-}
-.category{
-  background:var(--card);
-  padding:10px 14px;
-  border-radius:12px;
-  box-shadow:var(--shadow);
-  white-space:nowrap;
-  cursor:pointer;
-}
-.category:hover{ transform:translateY(-4px); transition:all .18s }
-
-/* Ensure categories are visible by default (override accidental hide rules) */
-.category{ opacity:1 ; display:inline-block !important; }
-
-/* Category tiles (grid of selectable tiles) */
-.categories-section{ display:flex; flex-direction:column; align-items:center; padding:24px 0; width:100% }
-.categories-section h2{ width:100%; text-align:left; margin-bottom:20px; font-size:24px; font-weight:700; color:var(--primary) }
-.category-tiles{ display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px; align-items:stretch; justify-content:center; width:100%; max-width:1200px }
-.category-tile{
-  background:var(--card);
-  border:1px solid rgba(16,24,40,0.04);
-  padding:14px 12px 14px 14px; /* room for count */
-  border-radius:10px;
-  box-shadow:var(--shadow);
-  cursor:pointer;
-  font-weight:700;
-  color:var(--primary);
-  text-align:center;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-}
-.category-tile:hover{ transform: translateY(-6px); box-shadow:0 18px 40px rgba(12,18,30,0.06) }
-.category-tile.active{ background: linear-gradient(90deg, rgba(0,196,180,0.08), rgba(110,68,255,0.06)); border-color: rgba(110,68,255,0.12); color:var(--primary) }
-
-.category-tile:focus{ outline:3px solid rgba(0,196,180,0.12); outline-offset:2px }
-
-.category-card{ display:flex; flex-direction:column; border-radius:8px; overflow:hidden; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:all 0.2s; cursor:pointer; }
-.category-card:hover{ transform:translateY(-4px); box-shadow:0 8px 16px rgba(0,0,0,0.15) }
-.category-card img{ width:100%; height:150px; object-fit:cover }
-.category-card-meta{ padding:12px; text-align:center; flex:1; display:flex; flex-direction:column; justify-content:center }
-.category-card-title{ font-size:16px; font-weight:bold; margin-bottom:4px; color:var(--primary) }
-.category-card-count{ font-size:14px; color:#999 }
-
-.cat-count{ background:var(--accent); color:#fff; font-weight:700; padding:4px 8px; border-radius:999px; font-size:12px }
-
-/* Results + Filters layout */
-.results-grid{ display:flex; gap:20px; align-items:flex-start; margin-top:18px }
-.results-main{ flex:1 }
-.results-grid > aside.filters-panel{ order:0 }
-.results-grid > main.results-main{ order:1 }
-.filters-panel{ width:280px; background:var(--card); padding:16px; border-radius:12px; box-shadow:var(--shadow); position:sticky; top:90px }
-.filters-panel h3{ margin:0 0 8px 0; color:var(--primary) }
-.filter-group{ margin:8px 0 }
-
-@media(max-width:1100px){
-  .category-tiles{ grid-template-columns: repeat(3, minmax(140px, 1fr)); width:90% }
-}
-@media(max-width:900px){
-  .results-grid{ flex-direction:column }
-  .filters-panel{ width:100%; position:relative; top:auto }
-  .category-tiles{ grid-template-columns: repeat(2, minmax(140px, 1fr)); width:100%; justify-items:center }
-  .filters-panel{ order:1 }
-  .results-main{ order:2 }
-  .categories-section{ justify-content:center }
-}
-@media(max-width:600px){
-  .category-tiles{ grid-template-columns: repeat(1, 1fr); width:100% }
+.hero-search button {
+  border-radius: 18px;
+  padding: 10px 14px;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Сетка объявлений и стили карточек (карточки используются на списках и в дашборде) */
-/* -------------------------------------------------------------------------- */
-.grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:var(--gap);
-  margin-top:16px;
-}
-.card{
-  background:var(--card);
-  border-radius:var(--radius);
-  overflow:hidden;
-  box-shadow:var(--shadow);
-  display:flex;
-  gap:20px;
-}
-/* Card preview: image or video on the left, metadata on the right */
-.card .preview{ position:relative; width:180px; min-width:180px; height:135px; overflow:hidden; flex-shrink:0 }
-.card .preview .thumb, .card .preview .preview-video{ width:100%; height:100%; object-fit:cover; display:block }
-.card .preview .discount{ position:absolute; left:8px; top:8px; background: linear-gradient(90deg, rgba(255,107,107,0.12), rgba(255,107,107,0.04)); color:var(--anim); padding:6px 8px; border-radius:8px; font-weight:700; font-size:13px }
-.card .preview .hot-badge{ position:absolute; right:8px; top:8px; background: linear-gradient(90deg, rgba(255,107,107,0.14), rgba(255,107,107,0.04)); color:var(--anim); padding:6px 8px; border-radius:6px; font-weight:700; font-size:12px }
+/* Мобильная версия — делаем элементы друг под другом */
+@media (max-width: 768px) {
+  .hero-search {
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px; /* ← отступ между всеми элементами */
+    width: 100%;
+  }
 
-/* 3D hover effect: slight rotateY and lift */
-.card{ transition: transform .22s ease, box-shadow .22s ease; transform-origin: center; }
-.card:hover{ transform: translateY(-6px); box-shadow:0 20px 40px rgba(12,18,30,0.12); /* remove strong rotateY for accessibility */ }
+  /* Селект категории — во всю ширину */
+  .hero-search select {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+  }
 
-/* Удалено дублирующееся правило .card .meta */
-/* Содержание карточки — ЕДИНСТВЕННОЕ корректное определение */
-.card .meta{
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  gap:6px;
-}
-.card .title{ font-weight:600; color:var(--primary) }
-.card .price{ color:var(--accent); font-weight:700 }
+  /* Форма — убираем flex, чтобы элементы шли друг под другом */
+  .hero-search form {
+    display: block !important;
+    width: 100%;
+  }
 
-/* Open button: jump animation on hover */
-.open-btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:8px; background: linear-gradient(90deg,var(--gradient-start),var(--gradient-end)); color:white; text-decoration:none; transition: transform .18s ease }
-.open-btn:hover{ transform: translateY(-6px); box-shadow:0 18px 40px rgba(110,68,255,0.12) }
-.open-btn.animate-cta{ animation: btn-bounce 1.4s ease infinite }
+  /* Поле поиска — во всю ширину */
+  .hero-search form input {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px 16px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    position: relative;
+    box-sizing: border-box;
+  }
 
-/* -------------------------------------------------------------------------- */
-/* Как это работает: интерактивный аккордеон (3 шага)                         */
-/* -------------------------------------------------------------------------- */
-.how-it-works{ margin:28px 0 }
-.how-it-works .accordion{ display:flex; flex-direction:column; gap:12px }
-.accordion-item{ background:var(--card); border-radius:10px; box-shadow:var(--shadow); overflow:hidden }
-.accordion-head{ display:flex; gap:12px; align-items:center; padding:12px 14px; width:100%; background:transparent; border:0; text-align:left; cursor:pointer }
-.accordion-head .icon{ font-size:20px; display:inline-flex; align-items:center; justify-content:center; width:34px }
-.accordion-head .head-title{ font-weight:700 }
-.accordion-head .chev{ margin-left:auto; color:var(--muted) }
-.accordion-body{ padding:0 14px; max-height:0; opacity:0; transition: all .36s cubic-bezier(.2,.9,.3,1); overflow:hidden }
-.accordion-body.open{ padding:12px 14px; opacity:1 }
+  /* Иконка лупы внутри поля */
+  .hero-search form input::before {
+    content: "🔍";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 18px;
+  }
 
-/* icon swing animation (simple) */
-.icon.swing{ animation: icon-swing .9s ease; transform-origin: 50% 10% }
-@keyframes icon-swing{ 0%{ transform: rotate(0) } 40%{ transform: rotate(20deg) } 60%{ transform: rotate(-8deg) } 100%{ transform: rotate(0) } }
+  .hero-search form input {
+    padding-left: 40px;
+  }
 
-@media(min-width:900px){ .how-it-works .accordion{ flex-direction:row } .accordion-item{ flex:1 } }
-/* изображение карточки */
-.card .thumb{
-  width:120px;
-  height:90px;
-  flex-shrink:0;
-  object-fit:cover;
-}
+  /* Кнопка "Найти" — во всю ширину, как поле поиска */
+  .hero-search button {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    cursor: pointer;
+    border: none;
+    margin-top: 10px; /* ← отступ между полем и кнопкой */
+  }
 
-/* -------------------------------------------------------------------------- */
-/* Кнопки: основные (primary) и вторичные (secondary) варианты                 */
-/* -------------------------------------------------------------------------- */
-.btn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 12px;
-  border-radius:10px;
-  background:var(--primary);
-  color:white;
-  text-decoration:none;
-  border:0; cursor:pointer;
-  box-shadow:0 6px 18px rgba(26,54,93,0.06);
-}
-.btn.secondary{
-  background:transparent; color:var(--primary); border:1px solid rgba(26,54,93,0.06);
-}
-
-/* -------------------------------------------------------------------------- */
-/* Формы: общие стили для форм, полей ввода, textarea и визуализации ошибок   */
-/* -------------------------------------------------------------------------- */
-.form{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  padding:14px;
-  background:var(--card);
-  border-radius:10px;
-  box-shadow:var(--shadow);
-}
-.input, textarea, select{
-  padding:10px 12px;
-  border-radius:8px;
-  border:1px solid #e6e9ee;
-  font-size:14px;
-  outline:none;
-}
-textarea{ min-height:120px; resize:vertical }
-
-/* -------------------------------------------------------------------------- */
-/* Футер: стили для нижней части страницы                                      */
-/* -------------------------------------------------------------------------- */
-.footer{
-  margin-top:28px;
-  padding:20px 0;
-  color:var(--muted);
-  font-size:14px;
-  text-align:center;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Адаптив: медиазапросы и настройки сетки для разных разрешений               */
-/* -------------------------------------------------------------------------- */
-@media(min-width:768px){
-  .grid{ grid-template-columns: repeat(2, 1fr); }
-}
-@media(min-width:1100px){
-  .grid{ grid-template-columns: repeat(3, 1fr); }
-  .header .inner{ gap:20px }
-}
-
-/* ДОБАВЛЕНО: минимальная ширина карточек на средних экранах */
-@media(min-width: 600px) {
-  .card {
-    min-width: 420px;
+  .hero-search button:hover {
+    background: rgba(255,255,255,0.1);
   }
 }
 
+
+
 /* -------------------------------------------------------------------------- */
-/* Страницы авторизации: стили для логина/регистрации/восстановления пароля     */
+/* 6. КОМПОНЕНТЫ: КНОПКИ, БЕЙДЖИ, ФОРМЫ                                    */
 /* -------------------------------------------------------------------------- */
-.auth-container {
-  max-width: 560px;
-  margin: 50px auto;
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 32px;
+/* Кнопки */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 0;
+  cursor: pointer;
+  border-radius: 10px;
+  font-weight: 700;
+}
+.btn.primary {
+  background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+  color: white;
+  box-shadow: 0 12px 30px rgba(110,68,255,0.10);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 50px rgba(110,68,255,0.14);
+}
+.btn.secondary {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid rgba(26,54,93,0.06);
 }
 
-.auth-container h2 {
-  margin-bottom: 16px;
-  color: #111827;
+/* Бейджи (скидка, хит) */
+.discount,
+.hot-badge {
+  background: linear-gradient(90deg, rgba(255,107,107,0.12), rgba(255,107,107,0.06));
+  color: var(--anim);
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+.hot-badge {
+  background: linear-gradient(90deg, rgba(255,107,107,0.14), rgba(255,107,107,0.04));
 }
 
-.auth-form {
+/* Формы */
+.form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  padding: 14px;
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
 }
-
-.auth-form .input {
+.input, textarea, select {
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #e6e9ee;
-  font-size: 15px;
+  font-size: 14px;
   outline: none;
 }
-
-.auth-form .input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(14,165,164,0.15);
+textarea {
+  min-height: 120px;
+  resize: vertical;
 }
 
-.auth-btns {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-.forgot-link {
-  text-align: right;
-  margin-top: -6px;
-}
-
-.forgot-link a {
-  font-size: 14px;
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.forgot-link a:hover {
-  text-decoration: underline;
-}
-
-.auth-divider {
-  margin: 24px 0;
-  border: none;
-  border-top: 1px solid #e6e9ee;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Плавающие метки: .form__group / .form__field / .form__label
-  Небольшие вспомогательные стили для эффекта плавающей метки в формах       */
-/* -------------------------------------------------------------------------- */
-.form__group {
-  position: relative;
-  padding: 20px 0 0;
-  width: 100%;
-  max-width: 100%; /* allow full width within container */
-}
-/* .form__field — само поле ввода */
-.form__field {
-  font-family: inherit;
-  width: 100%;
-  border: none;
-  border-bottom: 2px solid #9b9b9b;
-  outline: 0;
-  font-size: 17px;
-  color: inherit; /* используем текущий цвет текста, чтобы не ломать тему */
-  padding: 7px 0;
-  background: transparent;
-  transition: border-color 0.2s;
-}
-
-.form__field::placeholder {
-  color: transparent;
-}
-
-.form__field:placeholder-shown ~ .form__label {
-  font-size: 17px;
-  cursor: text;
-  top: 20px;
-}
-
-.form__label {
-  position: absolute;
-  top: 0;
-  display: block;
-  transition: 0.2s;
-  font-size: 17px;
-  color: #9b9b9b;
-  pointer-events: none;
-}
-
-.form__field:focus {
-  padding-bottom: 6px;
-  font-weight: 700;
-  border-width: 3px;
-  border-image: linear-gradient(to right, #116399, #38caef);
-  border-image-slice: 1;
-}
-
-.form__field:focus ~ .form__label {
-  position: absolute;
-  top: 0;
-  display: block;
-  transition: 0.2s;
-  font-size: 17px;
-  color: #38caef;
-  font-weight: 700;
-}
-
-/* reset input */
-.form__field:required, .form__field:invalid {
-  box-shadow: none;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Анимация лоадера: маленькие 3D-кубики используются в качестве индикатора загрузки */
-/* (адаптировано из Nawsome)                                                   */
-/* -------------------------------------------------------------------------- */
-.boxes {
-  --size: 28px; /* базовый размер кубика (подстроен под сайт) */
-  --duration: 900ms; /* скорость анимации */
-  height: calc(var(--size) * 2);
-  width: calc(var(--size) * 3);
-  position: relative;
-  transform-style: preserve-3d;
-}
-
-.boxes .box {
-  width: var(--size);
-  height: var(--size);
-  top: 0;
-  left: 0;
-  position: absolute;
-  transform-style: preserve-3d;
-}
-
-.boxes .box:nth-child(1) {
-  transform: translate(100%, 0);
-  animation: box1 var(--duration) linear infinite;
-}
-.boxes .box:nth-child(2) {
-  transform: translate(0, 100%);
-  animation: box2 var(--duration) linear infinite;
-}
-.boxes .box:nth-child(3) {
-  transform: translate(100%, 100%);
-  animation: box3 var(--duration) linear infinite;
-}
-.boxes .box:nth-child(4) {
-  transform: translate(200%, 0);
-  animation: box4 var(--duration) linear infinite;
-}
-
-.boxes .box > div {
-  --background: var(--accent, #0ea5a4); /* используем акцент сайта */
-  --translateZ: calc(var(--size) / 2);
-  --rotateY: 0deg;
-  --rotateX: 0deg;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: var(--background);
-  transform: rotateY(var(--rotateY)) rotateX(var(--rotateX)) translateZ(var(--translateZ));
-}
-
-.boxes .box > div:nth-child(1) { --top: 0; --left: 0; }
-.boxes .box > div:nth-child(2) { --background: #0a6fbf; --right: 0; --rotateY: 90deg; }
-.boxes .box > div:nth-child(3) { --background: #2d88f4; --rotateX: -90deg; }
-.boxes .box > div:nth-child(4) { --background: #e6f0ff; --top: 0; --left: 0; --translateZ: calc(var(--size) * 3 * -1); }
-
-@keyframes box1 {
-  0%,50% { transform: translate(100%, 0); }
-  100%  { transform: translate(200%, 0); }
-}
-@keyframes box2 {
-  0% { transform: translate(0, 100%); }
-  50% { transform: translate(0, 0); }
- 100% { transform: translate(100%, 0); }
-}
-@keyframes box3 {
-  0%,50% { transform: translate(100%, 100%); }
- 100% { transform: translate(0, 100%); }
-}
-@keyframes box4 {
-  0% { transform: translate(200%, 0); }
- 50% { transform: translate(200%, 100%); }
- 100% { transform: translate(100%, 100%); }
-}
-/* ---------------- END: Loader animation ---------------------------------- */
-/* -------------------------------------------------------------------------- */
-
-/* Small spacing polish for sections */
-.container > section{ margin-top:24px; margin-bottom:24px }
-
-/* Mobile-specific touch target improvements */
-@media(max-width:760px){
-  .btn{ padding:12px 16px; font-size:16px }
-  .card .preview{ width:120px; min-width:100px }
-  .hero .hero-content{ padding:14px }
-  .brand{ font-size:20px }
-}
-
-/* Cards: elevate and refine image treatment */
-.card{
-  border-radius: 16px;
-  overflow: visible; /* allow shadow to show */
-  transition: transform .28s cubic-bezier(.2,.9,.3,1), box-shadow .28s ease;
-}
-.card .preview{ border-radius: 12px; overflow:hidden; box-shadow: 0 8px 30px rgba(2,6,23,0.06); }
-.card:hover{ transform: translateY(-10px); box-shadow: var(--elev) }
-.card .price{
-  background: linear-gradient(90deg, rgba(0,196,180,0.12), rgba(110,68,255,0.06));
-  padding:8px 12px; border-radius:10px; display:inline-block; font-size:15px; color:var(--accent);
-}
-
-/* Floating price / badge on preview */
-.card .preview .price-badge{
-  position:absolute; right:10px; bottom:10px; background:linear-gradient(90deg,var(--gradient-start),var(--gradient-end)); color:#fff; padding:6px 10px; border-radius:999px; font-weight:800; box-shadow:0 8px 30px rgba(110,68,255,0.16);
-}
-
-/* Buttons: more refined gradient and focus states */
-.btn.primary{ background: linear-gradient(90deg, #00C4B4 0%, #6E44FF 100%); padding:12px 18px; border-radius:12px }
-.btn.primary:focus{ outline:3px solid rgba(110,68,255,0.12); outline-offset:4px }
-.btn.secondary{ border:1px solid rgba(16,24,40,0.06); background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98)); }
-
-/* Typography: increased contrast for headings and refined paragraph rhythm */
-h1,h2{ letter-spacing:-0.4px }
-p{ color:rgba(30,41,59,0.92); line-height:1.7 }
-
-/* Utilities: subtle container padding and max width tweak for a more spacious layout */
-.container{ padding-left:20px; padding-right:20px }
-
-/* Small screens: keep things roomy but compact */
-@media(max-width:760px){
-  .hero .hero-content{ padding:16px; border-radius:10px }
-  .card{ border-radius:12px }
-  .card .preview{ width:120px; min-width:100px }
-}
-
-/* Accessibility: improved focus outlines for keyboard users */
+/* Состояния фокуса (для доступности) */
 button:focus,
 a:focus,
 input:focus,
@@ -807,9 +468,256 @@ textarea:focus {
   outline-offset: 3px;
 }
 
+/* -------------------------------------------------------------------------- */
+/* 7. КОМПОНЕНТЫ: ОБЪЯВЛЕНИЯ (сетка и карточки)                             */
+/* -------------------------------------------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap);
+  margin-top: 16px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  overflow: visible;
+  box-shadow: var(--shadow);
+  display: flex;
+  gap: 20px;
+  transition: transform 0.28s cubic-bezier(0.2,0.9,0.3,1), box-shadow 0.28s ease;
+}
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 18px 50px rgba(12,18,30,0.12);
+}
+
+/* Превью карточки (левая часть) */
+.card .preview {
+  position: relative;
+  width: 180px;
+  min-width: 180px;
+  height: 135px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.06);
+}
+.card .preview img,
+.card .preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.card .preview .discount,
+.card .preview .hot-badge {
+  position: absolute;
+  top: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.card .preview .hot-badge {
+  right: 8px;
+}
+
+/* Контент карточки (правая часть) */
+.card .meta {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+}
+.card .title {
+  font-weight: 600;
+  color: var(--primary);
+}
+.card .price {
+  color: var(--accent);
+  font-weight: 700;
+  background: linear-gradient(90deg, rgba(0,196,180,0.12), rgba(110,68,255,0.06));
+  padding: 8px 12px;
+  border-radius: 10px;
+  display: inline-block;
+  font-size: 15px;
+}
+
+/* Кнопка "Открыть" в карточке */
+.open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+  color: white;
+  text-decoration: none;
+  transition: transform 0.18s ease;
+}
+.open-btn:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(110,68,255,0.12);
+}
+
+/* --- СТИЛИ ДЛЯ СТРАНИЦЫ "МОИ ОБЪЯВЛЕНИЯ" --- */
+body.my-listings-page .card {
+  max-width: 600px;
+  margin: 0 auto 16px;
+  flex-direction: column;
+}
+
+body.my-listings-page .card .preview {
+  width: 100%;
+  min-width: auto;
+  height: 180px;
+  border-radius: 12px;
+}
+
+body.my-listings-page .card .meta {
+  width: 100%;
+}
+
+body.my-listings-page .card .card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+body.my-listings-page .card .card-actions button {
+  padding: 6px 10px;
+  font-size: 14px;
+  white-space: nowrap;
+}
 
 /* -------------------------------------------------------------------------- */
-/* Профиль и аватар: компоненты личного кабинета                              */
+/* 8. КОМПОНЕНТЫ: КАТЕГОРИИ И АККОРДЕОН                                      */
+/* -------------------------------------------------------------------------- */
+/* Категории-таблетки */
+.categories {
+  display: flex;
+  gap: 10px;
+  overflow: auto;
+  padding: 12px 0;
+}
+.category {
+  background: var(--card);
+  padding: 10px 14px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.category:hover {
+  transform: translateY(-4px);
+  transition: all 0.18s;
+}
+
+/* Аккордеон "Как это работает" */
+.how-it-works {
+  margin: 28px 0;
+}
+.how-it-works .accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.accordion-item {
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.accordion-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.accordion-head .icon {
+  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+}
+.accordion-head .head-title {
+  font-weight: 700;
+}
+.accordion-head .chev {
+  margin-left: auto;
+  color: var(--muted);
+}
+.accordion-body {
+  padding: 0 14px;
+  max-height: 0;
+  opacity: 0;
+  transition: all 0.36s cubic-bezier(0.2,0.9,0.3,1);
+  overflow: hidden;
+}
+.accordion-body.open {
+  padding: 12px 14px;
+  opacity: 1;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 9. СТРАНИЦЫ: АВТОРИЗАЦИЯ (вход, регистрация, сброс пароля)                */
+/* -------------------------------------------------------------------------- */
+.auth-container {
+  max-width: 560px;
+  margin: 50px auto;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px;
+}
+.auth-container h2 {
+  margin-bottom: 16px;
+  color: #111827;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-form .input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e6e9ee;
+  font-size: 15px;
+  outline: none;
+}
+.auth-form .input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(14,165,164,0.15);
+}
+.forgot-link {
+  text-align: right;
+  margin-top: -6px;
+}
+.forgot-link a {
+  font-size: 14px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.forgot-link a:hover {
+  text-decoration: underline;
+}
+.auth-divider {
+  margin: 24px 0;
+  border: none;
+  border-top: 1px solid #e6e9ee;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 10. СТРАНИЦЫ: ПРОФИЛЬ (личный кабинет)                                   */
 /* -------------------------------------------------------------------------- */
 .profile-avatar img {
   width: 80px;
@@ -818,4 +726,261 @@ textarea:focus {
   object-fit: cover;
   border: 2px solid var(--bg);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 11. ФУТЕР                                                                */
+/* -------------------------------------------------------------------------- */
+.footer {
+  margin-top: 28px;
+  padding: 20px 0;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 12. АНИМАЦИИ И ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ                                    */
+/* -------------------------------------------------------------------------- */
+@keyframes sr-reveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  animation: sr-reveal 0.6s cubic-bezier(0.2,0.9,0.3,1) both;
+}
+
+@keyframes btn-bounce {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+.animate-cta {
+  animation: btn-bounce 1.2s ease infinite;
+}
+
+.muted-accent {
+  color: var(--accent);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 13. АДАПТИВНЫЙ ДИЗАЙН (ОТ МОБИЛЬНЫХ К ДЕСКТОПАМ)                        */
+/* -------------------------------------------------------------------------- */
+
+/* Мобильные устройства (до 480px) */
+@media (max-width: 480px) {
+  .hero { height: 300px; }
+  .hero .hero-content { padding: 12px; }
+  .hero h1 { font-size: clamp(20px, 8vw, 36px); }
+  .hero .hero-sub { font-size: 14px; }
+  .main-nav { display: none; }
+  .search-inline input { width: 120px; }
+  .cart { display: none; }
+  .auth-container { padding: 20px; margin: 20px auto; }
+  .auth-form .input { font-size: 16px; }
+  .card { width: 100%; min-width: auto; flex-direction: column; }
+  .card .preview { width: 100%; min-height: 200px; }
+  .brand { font-size: 20px; }
+}
+
+/* Устройства от 481px до 768px */
+@media (min-width: 481px) and (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+/* Планшеты и малые ноутбуки (769px – 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .how-it-works .accordion {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Десктопы (от 1025px) */
+@media (min-width: 1025px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* -------------------------------------------------------------------------- */
+/* АДАПТИВНЫЙ ХЕДЕР (mobile-friendly)                                       */
+/* -------------------------------------------------------------------------- */
+
+/* Мобильные (до 768px) */
+@media (max-width: 768px) {
+  .header-inner {
+    flex-wrap: wrap;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .logo-wrap {
+    flex: 1 1 150px;
+  }
+
+  .main-nav {
+    display: none;
+  }
+
+  .search-inline {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  .search-inline input {
+    width: 100% !important;
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .cart {
+    display: none;
+  }
+
+  .btn.add-listing {
+    padding: 6px 10px;
+    font-size: 14px;
+    min-width: 120px;
+  }
+
+  .auth-links {
+    display: flex;
+    gap: 8px;
+  }
+  .auth-links a {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* АДАПТИВНЫЙ ГЕРОЙ (hero)                                                   */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .hero {
+    height: clamp(280px, 45vh, 420px);
+  }
+
+  .hero-content {
+    padding: 16px;
+    max-width: 100%;
+  }
+
+  .hero h1 {
+    font-size: clamp(22px, 6vw, 36px);
+  }
+
+  .hero-sub {
+    font-size: 16px;
+  }
+
+  .hero-search {
+    width: 100%;
+    max-width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .hero-search select,
+  .hero-search input {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .hero-search button {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* МОБИЛЬНОЕ МЕНЮ (бургер)                                                    */
+/* -------------------------------------------------------------------------- */
+
+.mobile-menu-btn {
+  display: none;
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block;
+    margin-left: 12px;
+  }
+
+  .main-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    z-index: 60;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .main-nav.active {
+    display: flex;
+  }
+
+  .btn.add-listing,
+  .header-actions .btn {
+    padding: 6px 10px;
+    font-size: 14px;
+    min-width: auto;
+  }
+
+  .brand {
+    font-size: 20px;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* ПОИСК В ГЕРОЕ: перераспределяем пространство                                 */
+/* -------------------------------------------------------------------------- */
+
+@media (min-width: 769px) {
+  .hero-search {
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 8px;
+  }
+  .hero-search select {
+    min-width: 180px;
+    width: 180px;
+  }
+  .hero-search input {
+    width: 100%;
+  }
+  .hero-search button {
+    white-space: nowrap;
+    padding: 12px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-search {
+    flex-direction: column;
+    padding: 12px;
+  }
+  .hero-search select,
+  .hero-search input,
+  .hero-search button {
+    width: 100%;
+    text-align: center;
+  }
 }

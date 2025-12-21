@@ -1,17 +1,13 @@
 // ============================================================
 // ГЛОБАЛЬНЫЙ ПОИСК (search.js)
 // ============================================================
-// Этот скрипт обеспечивает единую функцию поиска на всех страницах
-// Используется на index.html, listings.html и других страницах
 
-// Функция для поиска объявлений на сервере
-// q — строка поиска или query string с параметрами фильтров
-async function loadListings(q = '') {
-  // Ищем контейнер для результатов
+// Функция для поиска объявлений с поддержкой категории
+async function loadListings(query = '', category = '') {
   const root = document.getElementById('listings') || document.getElementById('resultsGrid');
-  if (!root) return; // Если контейнер не найден, выходим
+  if (!root) return;
 
-  // Показываем анимацию загрузки
+  // Анимация загрузки
   root.innerHTML = `
     <div style="display:flex;justify-content:center;padding:24px;">
       <div class="boxes" aria-hidden="true">
@@ -24,43 +20,33 @@ async function loadListings(q = '') {
   `;
 
   try {
-    // Формируем URL для запроса к API
-    let fetchUrl;
-    if (q && q.startsWith('?')) {
-      fetchUrl = '/api/listings' + q;
-    } else {
-      fetchUrl = '/api/listings' + (q ? ('?q=' + encodeURIComponent(q)) : '');
-    }
+    // Формируем URL с параметрами
+    const params = new URLSearchParams();
+    if (query) params.set('q', query);
+    if (category) params.set('category', category);
 
-    // Отправляем GET запрос на сервер
+    const fetchUrl = '/api/listings' + (params.toString() ? '?' + params.toString() : '');
+
     const res = await fetch(fetchUrl);
     const data = await res.json();
 
-    // Проверяем, что ответ — это массив
     if (!Array.isArray(data)) {
       root.innerText = 'Ошибка формата ответа';
       return;
     }
 
-    // Если результатов нет
     if (data.length === 0) {
-      const msg = document.createElement('div');
-      msg.textContent = 'Объявлений пока нет.';
-      root.innerHTML = '';
-      root.appendChild(msg);
+      root.innerHTML = '<div style="text-align:center; color:#aaa; padding:30px;">Объявлений не найдено</div>';
       return;
     }
 
-    // Очищаем контейнер и показываем результаты
     root.innerHTML = '';
 
-    // Для каждого объявления создаём карточку
     data.forEach((item, idx) => {
       const card = document.createElement('article');
       card.className = 'card';
 
-      // Определяем изображение
-      const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/400/300`;
+      const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title || 'default')}/400/300`;
       const priceText = item.price ? (item.price + ' ₽') : 'Цена по договорённости';
       const discount = item.discount || 0;
       const rating = item.rating || 0;
@@ -68,7 +54,7 @@ async function loadListings(q = '') {
       const inStock = item.in_stock !== undefined ? Boolean(item.in_stock) : Boolean(item.stock);
       const isHot = item.is_hot || (item.tags && item.tags.includes('hot'));
 
-      // Создаём изображение
+      // Preview
       const preview = document.createElement('div');
       preview.className = 'preview';
       const img = document.createElement('img');
@@ -77,11 +63,10 @@ async function loadListings(q = '') {
       img.src = imgUrl;
       img.addEventListener('error', function onErr() {
         this.removeEventListener('error', onErr);
-        this.src = '/img/placeholder.svg'; // Плейсхолдер при ошибке
+        this.src = '/img/placeholder.svg';
       });
       preview.appendChild(img);
 
-      // Добавляем скидку если есть
       if (discount) {
         const d = document.createElement('div');
         d.className = 'discount';
@@ -89,7 +74,6 @@ async function loadListings(q = '') {
         preview.appendChild(d);
       }
 
-      // Добавляем "хит продаж" если есть
       if (isHot) {
         const h = document.createElement('div');
         h.className = 'hot-badge';
@@ -97,7 +81,7 @@ async function loadListings(q = '') {
         preview.appendChild(h);
       }
 
-      // Создаём информацию об объявлении
+      // Meta
       const meta = document.createElement('div');
       meta.className = 'meta';
       const metaLeft = document.createElement('div');
@@ -118,7 +102,6 @@ async function loadListings(q = '') {
       metaLeft.appendChild(muted);
       metaLeft.appendChild(ratingDiv);
 
-      // Правая часть (цена, наличие, кнопка открыть)
       const metaRight = document.createElement('div');
       metaRight.style.display = 'flex';
       metaRight.style.flexDirection = 'column';
@@ -147,88 +130,88 @@ async function loadListings(q = '') {
 
       card.appendChild(preview);
       card.appendChild(meta);
-
       card.classList.add('slide-in');
       root.appendChild(card);
 
-      // Добавляем анимацию появления
       setTimeout(() => card.classList.add('animate-in'), 80 * idx + 50);
     });
 
   } catch (e) {
     root.innerText = 'Не удалось загрузить объявления.';
-    console.error('Ошибка загрузки объявлений:', e);
+    console.error('Ошибка загрузки:', e);
   }
 }
 
 // ============================================================
-// ИНИЦИАЛИЗАЦИЯ ПОИСКА НА СТРАНИЦЕ
+// ИНИЦИАЛИЗАЦИЯ ПОИСКА
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Находим все элементы поиска на странице
+  // Элементы на главной
   const heroFindBtn = document.getElementById('heroFind');
-  const searchBtn = document.getElementById('searchBtn');
   const heroQuery = document.getElementById('heroQuery');
-  const searchInput = document.getElementById('searchInput');
   const heroCategory = document.getElementById('heroCategory');
 
-  // 2. При клике на кнопку "Найти" в герой секции
+  // Элементы на listings.html
+  const searchBtn = document.getElementById('searchBtn');
+  const searchInput = document.getElementById('searchInput');
+  const categoryFilter = document.querySelector('select[name="category"]');
+
+  // 🔹 1. Клик по кнопке "Найти" в герое
   if (heroFindBtn) {
-    heroFindBtn.addEventListener('click', () => {
+    heroFindBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const q = heroQuery ? heroQuery.value.trim() : '';
       const cat = heroCategory ? heroCategory.value : '';
-      const qv = heroQuery ? heroQuery.value.trim() : '';
-      const qstr = [cat, qv].filter(Boolean).join(' ');
-      loadListings(qstr);
+      loadListings(q, cat);
     });
   }
 
-  // 3. При нажатии Enter в поле поиска герой
+  // 🔹 2. Enter в поле поиска героя
   if (heroQuery) {
     heroQuery.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
+        e.preventDefault();
+        const q = heroQuery.value.trim();
         const cat = heroCategory ? heroCategory.value : '';
-        const qv = heroQuery.value.trim();
-        const q = [cat, qv].filter(Boolean).join(' ');
-        loadListings(q);
+        loadListings(q, cat);
       }
     });
   }
 
-  // 4. При клике на кнопку "Поиск" на странице listings
-  if (searchBtn && searchInput) {
-    searchBtn.addEventListener('click', () => {
-      const q = searchInput.value.trim();
-      loadListings(q);
+  // 🔹 3. Клик по кнопке на listings.html
+  if (searchBtn) {
+    searchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const q = searchInput ? searchInput.value.trim() : '';
+      const cat = categoryFilter ? categoryFilter.value : '';
+      loadListings(q, cat);
     });
   }
 
-  // 5. При нажатии Enter в поле поиска на listings
+  // 🔹 4. Enter на listings.html
   if (searchInput) {
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
+        e.preventDefault();
         const q = searchInput.value.trim();
-        loadListings(q);
+        const cat = categoryFilter ? categoryFilter.value : '';
+        loadListings(q, cat);
       }
     });
   }
 
-  // 6. Проверяем, есть ли контейнер listings (для index.html)
-  // На listings.html используется свой loadAll() с фильтрами
+  // 🔹 5. Загрузка при открытии index.html
   const listingsContainer = document.getElementById('listings');
-  if (!listingsContainer) {
-    // Это listings.html, не запускаем поиск (там своя логика loadAll)
-    return;
-  }
+  if (listingsContainer) {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q') || '';
+    const cat = params.get('category') || '';
+    
+    // Восстанавливаем значения в форме
+    if (heroQuery) heroQuery.value = q;
+    if (heroCategory) heroCategory.value = cat;
 
-  // Для index.html: если в URL есть параметр поиска, выполняем поиск
-  const params = new URLSearchParams(window.location.search);
-  const urlQ = params.get('q');
-
-  if (urlQ) {
-    if (heroQuery) heroQuery.value = urlQ;
-    loadListings(urlQ);
-  } else {
-    // Загружаем последние объявления при первом посещении
-    loadListings('');
+    // Запускаем поиск
+    loadListings(q, cat);
   }
 });

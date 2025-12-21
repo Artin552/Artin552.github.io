@@ -29,16 +29,19 @@
         </div>
       </div>
 
-      <!-- Главная навигация сайта -->
-      <nav class="main-nav" id="mainNav">
+
+            
+      <!-- Бургер-меню -->
+      <button class="mobile-menu-btn" aria-label="Меню">☰</button>
+
+      <!-- Навигация -->
+      <div id="navMenu" class="main-nav">
         <a href="/index.html">Главная</a>
         <a href="/frontend/listings.html">Категории</a>
         <a href="#">Для бизнеса</a>
         <a href="#">Доставка</a>
-        <a href="#">Контакты</a>
-      </nav>
-
-      <!-- Правая часть шапки: аутентификация, корзина, кнопка добавления -->
+        <a href="/frontend/contacts.html">Контакты</a>
+        <!-- Правая часть шапки: аутентификация, корзина, кнопка добавления -->
       <div class="header-actions">
         <!-- Ссылки входа/регистрации (скрываются при авторизации) -->
          <div class="auth-links"></div>
@@ -51,6 +54,8 @@
         <!-- ЕДИНСТВЕННАЯ КНОПКА для добавления объявления (другая есть в личном кабинете) -->
         <a class="btn add-listing" href="/frontend/add.html" id="addBtn">+ Добавить объявление</a>
       </div>
+      </div>
+      
     </div>
   </header>
 
@@ -69,18 +74,20 @@
       <p class="hero-sub">Быстро. Надежно. Без посредников.</p>
       <div class="hero-stats">📦 5000+ товаров | 🚚 Доставка по всей России | 💼 B2B &amp; B2C</div>
       
-      <!-- Поиск товаров с фильтром по категориям -->
-      <div class="search-box hero-search">
+    <!-- Поиск товаров с фильтром по категориям -->
+    <div class="hero-search">
         <select id="heroCategory">
           <option value="">Выберите категорию</option>
           <option>Материалы</option>
           <option>Инструменты</option>
           <option>Техника</option>
         </select>
-        <input id="heroQuery" type="text" placeholder="Введите название товара...">
-        <button id="heroFind" class="btn">🔍 Найти</button>
-      </div>
-      
+
+      <form action="/frontend/listings.html" method="GET" style="display: flex; gap: 8px; width: 100%;">
+        <input name="q" placeholder="Найти" style="flex: 1;">
+        <button type="submit" class="btn">🔍 Найти</button>
+      </form>
+    </div>
       <!-- Кнопка просмотра видео (скрыта по умолчанию) -->
       <button id="watchVideoBtn" class="btn secondary" style="margin-top:12px; display:none;">Посмотреть видео</button>
     </div>

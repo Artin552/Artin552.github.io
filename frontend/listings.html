@@ -14,19 +14,26 @@
   <!-- ========================================
        ШАПКА САЙТА
        ======================================== -->
-  <header class="header">
-    <div class="container inner">
-      <!-- Логотип и название -->
-      <a class="logo" href="/">
+<header class="header main-header" id="mainHeader">
+    <div class="top_header header-inner container">
+      <!-- Логотип и брендинг -->
+      <div class="logo-wrap">
+        <a class="logo" href="/index.html">
           <span class="brand">BUILDSTORE</span>
-      </a>
+        </a>
+        <!-- Интерактивный молоток (при наведении подпрыгивает) -->
+        <div class="hammer" id="hammer" title="Строительный молоток" aria-hidden="true">
+          🔨
+        </div>
+      </div>
+
 
       <!-- Поиск товаров -->
-      <div style="flex: 1; margin: 0 16px;">
-        <div class="search-bar">
-          <input id="searchInput" placeholder="Поиск по объявлениям">
-          <button class="btn" id="searchBtn">Поиск</button>
-        </div>
+       <div class="search-inline">
+       <form action="/frontend/listings.html" method="GET" style="display: flex; gap: 8px; width: 100%;">
+          <input name="q" placeholder="Поиск по объявлениям" style="flex: 1;">
+          <button type="submit" class="btn">Поиск</button>
+        </form>
       </div>
 
       <!-- Кнопки навигации -->

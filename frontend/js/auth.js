@@ -151,3 +151,24 @@
     init();
   }
 })();
+
+
+
+// Бургер-меню
+document.addEventListener('DOMContentLoaded', () => {
+  const menuBtn = document.querySelector('.mobile-menu-btn');
+  const navMenu = document.getElementById('navMenu');
+
+  if (menuBtn && navMenu) {
+    menuBtn.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+    });
+
+    // Закрываем меню при клике вне
+    document.addEventListener('click', (e) => {
+      if (!menuBtn.contains(e.target) && !navMenu.contains(e.target)) {
+        navMenu.classList.remove('active');
+      }
+    });
+  }
+});
