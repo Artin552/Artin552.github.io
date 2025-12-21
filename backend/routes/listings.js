@@ -37,9 +37,9 @@ router.get('/', (req, res) => {
   const where = [];
 
   if (q) {
-    where.push('(title LIKE ? OR description LIKE ? OR category LIKE ?)');
+    where.push('(title LIKE ? OR description LIKE ?)');
     const like = `%${q}%`;
-    params.push(like, like, like);
+    params.push(like, like);
   }
   if (category) {
     where.push('category = ?');
